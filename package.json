@@ -1,0 +1,9 @@
+{
+  "name": "korean-point",
+  "version": "1.0.0",
+  "description": "Korean Point — Korean skincare storefront demo with a tiny JSON-file backend.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

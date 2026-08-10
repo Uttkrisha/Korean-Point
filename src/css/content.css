@@ -1,0 +1,68 @@
+/* Why grid, routine timeline, before/after, reviews, instagram grid, FAQ */
+.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+.why-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: var(--space-6); text-align: center;
+}
+.why-card__icon { font-size: 2rem; margin-bottom: var(--space-3); }
+.why-card__title { font-weight: 700; font-size: 1.02rem; margin-bottom: 6px; }
+.why-card__text { color: var(--text-soft); font-size: .88rem; line-height: 1.6; }
+
+.timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
+.tl-step { text-align: center; }
+.tl-step__ring {
+  width: 80px; height: 80px; margin: 0 auto var(--space-4); border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--sage); display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+}
+.tl-step__num { font-size: .74rem; color: var(--sage-deep); font-weight: 700; letter-spacing: .1em; }
+.tl-step__title { font-weight: 700; margin-block: 4px; }
+.tl-step__text { font-size: .84rem; color: var(--text-soft); line-height: 1.55; }
+
+.ba { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-7); align-items: center; }
+.ba__list { margin-top: var(--space-5); display: flex; gap: var(--space-6); flex-wrap: wrap; }
+.ba__list strong { display: block; font-family: var(--font-display); font-size: 1.3rem; color: var(--sage-deep); }
+.ba__list li { font-size: .8rem; color: var(--text-soft); }
+
+.ba__viewer { position: relative; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); aspect-ratio: 4/3; }
+.ba__img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.ba__after { position: absolute; inset: 0; width: 50%; overflow: hidden; }
+.ba__after .ba__img { width: 200%; max-width: 200%; }
+.ba__handle { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: var(--white); pointer-events: none; }
+.ba__range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.ba__tag { position: absolute; bottom: 12px; font-size: .72rem; font-weight: 700; background: rgba(0,0,0,.55); color: #fff; padding: 4px 10px; border-radius: 4px; }
+.ba__tag--l { left: 12px; }
+.ba__tag--r { right: 12px; }
+
+.review-stage { display: flex; align-items: center; gap: var(--space-5); }
+.review-viewport { flex: 1; overflow: hidden; }
+.review-track { display: flex; transition: transform .3s; }
+.review-track > .review-card { flex: 0 0 100%; }
+.review-card {
+  max-width: 640px; margin: 0 auto; text-align: center; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-7);
+}
+.review-card__avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto var(--space-3); }
+.review-card__stars { color: #e6a940; margin-bottom: var(--space-3); }
+.review-card__text { font-size: 1.02rem; line-height: 1.7; }
+.review-card__name { margin-top: var(--space-4); font-weight: 700; }
+.review-card__role { font-size: .78rem; color: var(--text-soft); }
+.review__arrow { flex-shrink: 0; }
+
+.dots { display: flex; justify-content: center; gap: 8px; margin-top: var(--space-5); }
+.dots button { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+.dots button.is-active { background: var(--sage-deep); }
+
+.ig-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-3); }
+.ig-item { aspect-ratio: 1/1; border-radius: var(--radius); overflow: hidden; }
+.ig-item img { width: 100%; height: 100%; object-fit: cover; }
+
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q {
+  width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center;
+  padding: var(--space-5) 0; font-weight: 600; font-size: 1rem;
+}
+.faq-q__icon { width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+.faq-a { display: none; }
+.faq-item.is-open .faq-a { display: block; }
+.faq-a p { padding-bottom: var(--space-5); color: var(--text-soft); line-height: 1.65; }

@@ -1,0 +1,68 @@
+/* Design tokens (colors, spacing, etc) + browser reset */
+:root {
+  --beige: #f6efe6;
+  --sage: #a8c3ab;
+  --sage-deep: #7fa284;
+  --pink: #f3d4d8;
+  --pink-deep: #e8b4bc;
+  --ink: #2b2622;
+  --ink-soft: #6b6259;
+  --white: #ffffff;
+  --line: #e7ddd0;
+
+  --bg: var(--white);
+  --bg-tint: var(--beige);
+  --surface: var(--white);
+  --text: var(--ink);
+  --text-soft: var(--ink-soft);
+  --border: var(--line);
+
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(43, 38, 34, 0.08);
+
+  --font-display: 'Poppins', 'Noto Sans KR', sans-serif;
+  --font-body: 'Noto Sans KR', 'Poppins', sans-serif;
+
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px;
+
+  --dur: .15s;
+  --container: 1100px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #17140f;
+  --bg-tint: #1e1a14;
+  --surface: #221e18;
+  --text: #f2ece2;
+  --text-soft: #b8ada0;
+  --border: #352f27;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+* , *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * , *::before, *::after { transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, select { font: inherit; color: inherit; }
+ul, ol { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, h4, p { margin: 0; }
+svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+:focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 2px; }

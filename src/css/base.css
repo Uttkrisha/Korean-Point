@@ -1,0 +1,50 @@
+/* Layout helpers, buttons, icon buttons, misc controls */
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--space-5); }
+.container--narrow { max-width: 780px; }
+.section { padding: var(--space-8) 0; }
+.section--tint { background: var(--bg-tint); }
+.section__head { max-width: 620px; margin: 0 auto var(--space-6); text-align: center; }
+.section__head--row { display: flex; align-items: flex-end; justify-content: space-between; text-align: left; max-width: none; gap: var(--space-4); }
+.eyebrow { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--sage-deep); font-weight: 600; margin-bottom: var(--space-2); }
+.section__title { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 600; line-height: 1.2; }
+.section__sub { margin-top: var(--space-3); color: var(--text-soft); font-size: 1rem; line-height: 1.6; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  padding: 12px 24px; border-radius: var(--radius); font-weight: 600; font-size: .92rem;
+  cursor: pointer; white-space: nowrap; transition: background var(--dur), color var(--dur);
+}
+.btn--primary { background: var(--ink); color: var(--white); }
+.btn--primary:hover { background: var(--sage-deep); }
+.btn--outline { border: 1.5px solid var(--ink); background: transparent; }
+.btn--outline:hover { background: var(--ink); color: var(--white); }
+.btn--ghost { background: transparent; color: var(--text-soft); border: 1px solid var(--border); }
+.btn--ghost:hover { color: var(--text); }
+.btn--sm { padding: 8px 14px; font-size: .82rem; }
+.btn--block { width: 100%; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.icon-btn {
+  position: relative; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius); transition: background var(--dur);
+}
+.icon-btn:hover { background: var(--bg-tint); }
+.icon-btn--solid { background: var(--surface); border: 1px solid var(--border); }
+.icon-btn--solid:hover { background: var(--sage); color: var(--white); }
+.icon-btn .badge {
+  position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; padding: 0 4px;
+  background: var(--pink-deep); color: #4a2229; font-size: .65rem; font-weight: 700;
+  border-radius: 999px; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg);
+}
+
+.select {
+  border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius);
+  padding: 10px 14px; font-size: .88rem; cursor: pointer;
+}
+
+/* theme icon swap */
+.icon-moon { display: none; }
+:root[data-theme="dark"] .icon-sun { display: none; }
+:root[data-theme="dark"] .icon-moon { display: block; }
