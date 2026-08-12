@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (isset($_SESSION['user_id'])) {
+    header('Location: index.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -17,7 +24,7 @@
 
 <main class="auth-page">
   <div class="auth-card">
-    <a class="logo" href="index.html">
+    <a class="logo" href="index.php">
       <span class="logo__leaf" aria-hidden="true">🌿</span>
       <span class="logo__text">Korean Point</span>
     </a>
@@ -37,7 +44,7 @@
       <button class="btn btn--primary btn--block" type="submit">Log In</button>
     </form>
 
-    <p class="auth-switch">Don't have an account? <a href="register.html">Register</a></p>
+    <p class="auth-switch">Don't have an account? <a href="register.php">Register</a></p>
   </div>
 </main>
 

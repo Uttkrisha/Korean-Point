@@ -12,10 +12,10 @@ function setupDelegation() {
     if (quick) openQuickView(quick.dataset.quick);
 
     const inc = e.target.closest('[data-inc]');
-    if (inc) { const c = state.cart.find((x) => x.id === inc.dataset.inc); setQty(inc.dataset.inc, c.qty + 1); }
+    if (inc) { const c = cartData.items.find((x) => x.id === inc.dataset.inc); if (c) setQty(inc.dataset.inc, c.qty + 1); }
 
     const dec = e.target.closest('[data-dec]');
-    if (dec) { const c = state.cart.find((x) => x.id === dec.dataset.dec); setQty(dec.dataset.dec, c.qty - 1); }
+    if (dec) { const c = cartData.items.find((x) => x.id === dec.dataset.dec); if (c) setQty(dec.dataset.dec, c.qty - 1); }
 
     const remove = e.target.closest('[data-remove]');
     if (remove) removeFromCart(remove.dataset.remove);
@@ -59,7 +59,7 @@ async function init() {
   if ($('#reviewTrack')) renderReviews();
   if ($('#igGrid')) renderIg();
   if ($('#faqList')) renderFaq();
-  renderCart();
+  await renderCart();
 
   if ($('#baRange')) setupBeforeAfter();
   setupNav();

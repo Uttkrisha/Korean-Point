@@ -6,7 +6,6 @@ const LS = {
 };
 
 const state = {
-  cart: LS.get('kp_cart', []),  // [{id, qty}]
   theme: LS.get('kp_theme', null),
   category: 'All',
   search: '',

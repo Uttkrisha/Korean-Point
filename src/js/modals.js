@@ -25,7 +25,10 @@ function openQuickView(id) {
   let qty = 1;
   $('#qvDec').addEventListener('click', () => { qty = Math.max(1, qty - 1); $('#qvQty').textContent = qty; });
   $('#qvInc').addEventListener('click', () => { qty += 1; $('#qvQty').textContent = qty; });
-  $('#qvAdd').addEventListener('click', () => { for (let i = 0; i < qty; i++) addToCart(id, i > 0); closeModal('#quickModal'); });
+  $('#qvAdd').addEventListener('click', async () => {
+    for (let i = 0; i < qty; i++) await addToCart(id, i > 0);
+    closeModal('#quickModal');
+  });
   openModal('#quickModal');
 }
 
@@ -73,11 +76,9 @@ async function handleCheckoutSubmit(e) {
   const err = $('#coError');
   if (missing) { err.textContent = 'Please fill in every field.'; err.hidden = false; return; }
 
-  const { items, subtotal } = cartTotals();
+  // Only the customer's shipping details are sent — the server reads the
+  // cart and looks up prices from MySQL itself, it never trusts the browser.
   const order = {
-    userId: currentUser.id,
-    items: items.map((c) => ({ id: c.id, name: c.product.name, price: c.product.price, qty: c.qty })),
-    total: subtotal,
     name: $('#coName').value.trim(),
     email: $('#coEmail').value.trim(),
     address: $('#coAddr').value.trim(),
@@ -85,7 +86,7 @@ async function handleCheckoutSubmit(e) {
     zip: $('#coZip').value.trim(),
   };
 
-  const res = await fetch('/api/orders', {
+  const res = await fetch('../api/orders.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(order),
@@ -97,8 +98,6 @@ async function handleCheckoutSubmit(e) {
   closeModal('#checkoutModal');
   $('#orderId').textContent = '#' + data.id;
   openModal('#successModal');
-  state.cart = [];
-  LS.set('kp_cart', state.cart);
-  renderCart();
+  await refreshCart();
   $('#coForm').reset();
 }

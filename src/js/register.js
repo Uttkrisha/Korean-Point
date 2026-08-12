@@ -1,8 +1,5 @@
 'use strict';
 document.addEventListener('DOMContentLoaded', () => {
-  const already = JSON.parse(localStorage.getItem('kp_user') || 'null');
-  if (already) { location.href = 'index.html'; return; }
-
   const birthdateInput = document.getElementById('regBirthdate');
   const today = new Date().toISOString().slice(0, 10);
   birthdateInput.max = today; // blocks picking a future date in the date picker
@@ -28,15 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (password.length < 6) return showError('Password must be at least 6 characters.');
     if (password !== confirm) return showError('Passwords do not match.');
 
-    const res = await fetch('/api/register', {
+    const res = await fetch('../api/register.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, birthdate, password }),
+      body: JSON.stringify({ name, email, birthdate, password, confirm }),
     });
     const data = await res.json();
     if (!res.ok) return showError(data.error);
 
-    localStorage.setItem('kp_user', JSON.stringify(data));
-    location.href = 'index.html';
+    location.href = 'index.php';
   });
 });

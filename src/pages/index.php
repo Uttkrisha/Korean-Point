@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -22,19 +29,18 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
 </head>
 <body>
-<script src="../js/auth.js"></script>
 
 <header class="nav" id="nav">
   <div class="container nav__inner">
-    <a class="logo" href="index.html" aria-label="Korean Point home">
+    <a class="logo" href="index.php" aria-label="Korean Point home">
       <span class="logo__leaf" aria-hidden="true">🌿</span>
       <span class="logo__text">Korean Point</span>
     </a>
 
     <nav class="nav__links" id="navLinks" aria-label="Primary">
-      <a href="index.html" class="nav__link">Home</a>
-      <a href="shop.html" class="nav__link">Shop</a>
-      <a href="about.html" class="nav__link">About</a>
+      <a href="index.php" class="nav__link">Home</a>
+      <a href="shop.php" class="nav__link">Shop</a>
+      <a href="about.php" class="nav__link">About</a>
     </nav>
 
     <div class="nav__actions">
@@ -77,8 +83,8 @@
       <p class="hero__text">Dermatologist-tested Korean skincare built on fermented botanicals,
         centella and niacinamide — gentle enough for sensitive skin, powerful enough to see in the mirror.</p>
       <div class="hero__cta">
-        <a href="shop.html" class="btn btn--primary">Shop Now</a>
-        <a href="shop.html" class="btn btn--outline">Explore Collection</a>
+        <a href="shop.php" class="btn btn--primary">Shop Now</a>
+        <a href="shop.php" class="btn btn--outline">Explore Collection</a>
       </div>
       <ul class="hero__stats">
         <li><strong>120,000+</strong><span>Happy customers</span></li>
@@ -177,7 +183,7 @@
 <footer class="footer">
   <div class="container footer__grid">
     <div class="footer__col">
-      <a class="logo" href="index.html"><span class="logo__leaf" aria-hidden="true">🌿</span><span class="logo__text">Korean Point</span></a>
+      <a class="logo" href="index.php"><span class="logo__leaf" aria-hidden="true">🌿</span><span class="logo__text">Korean Point</span></a>
       <p class="footer__about">Clean Korean skincare formulated in Seoul, made for every skin barrier.
         Cruelty free, dermatologist tested, recyclable glass.</p>
       <div class="socials">
@@ -190,20 +196,20 @@
 
     <nav class="footer__col" aria-label="Quick links">
       <h3>Shop</h3>
-      <ul><li><a href="shop.html">All Products</a></li>
-        <li><a href="index.html#categories">Categories</a></li><li><a href="about.html">Routine</a></li></ul>
+      <ul><li><a href="shop.php">All Products</a></li>
+        <li><a href="index.php#categories">Categories</a></li><li><a href="about.php">Routine</a></li></ul>
     </nav>
 
     <nav class="footer__col" aria-label="Customer support">
       <h3>Support</h3>
-      <ul><li><a href="index.html#faq">FAQ</a></li><li><a href="index.html#faq">Shipping &amp; Returns</a></li>
-        <li><a href="index.html#faq">Ingredient Glossary</a></li></ul>
+      <ul><li><a href="index.php#faq">FAQ</a></li><li><a href="index.php#faq">Shipping &amp; Returns</a></li>
+        <li><a href="index.php#faq">Ingredient Glossary</a></li></ul>
     </nav>
 
     <div class="footer__col">
       <h3>Company</h3>
-      <ul><li><a href="about.html">Our Story</a></li><li><a href="about.html">Sustainability</a></li>
-        <li><a href="index.html#reviews">Reviews</a></li></ul>
+      <ul><li><a href="about.php">Our Story</a></li><li><a href="about.php">Sustainability</a></li>
+        <li><a href="index.php#reviews">Reviews</a></li></ul>
       <p class="footer__contact">Seongsu-dong, Seoul</p>
     </div>
   </div>

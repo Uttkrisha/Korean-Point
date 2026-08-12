@@ -20,7 +20,7 @@ function renderCategories() {
       syncChips();
       renderProducts();
     } else {
-      location.href = 'shop.html?category=' + encodeURIComponent(card.dataset.category);
+      location.href = 'shop.php?category=' + encodeURIComponent(card.dataset.category);
     }
   });
 }

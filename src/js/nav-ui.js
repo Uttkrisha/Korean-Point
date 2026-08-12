@@ -1,5 +1,10 @@
 'use strict';
-/* Navbar active-link/mobile menu, search bar, theme toggle, back-to-top */
+/* Navbar active-link/mobile menu, search bar, theme toggle, back-to-top,
+   and logout (destroys the PHP session). */
+
+function logout() {
+  location.href = '../api/logout.php';
+}
 
 function setupNav() {
   const hamburger = $('#hamburger');
@@ -16,7 +21,7 @@ function setupNav() {
   $$('.nav__link').forEach((l) => l.addEventListener('click', () => toggleMenu(false)));
 
   // highlight the link for the page we're currently on
-  const here = location.pathname.split('/').pop() || 'index.html';
+  const here = location.pathname.split('/').pop() || 'index.php';
   $$('.nav__link').forEach((l) => l.classList.toggle('is-active', l.getAttribute('href') === here));
 }
 
@@ -41,7 +46,7 @@ function setupSearch() {
     input.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
       e.preventDefault();
-      location.href = 'shop.html?q=' + encodeURIComponent(input.value.trim());
+      location.href = 'shop.php?q=' + encodeURIComponent(input.value.trim());
     });
     $('#searchClear').addEventListener('click', () => { input.value = ''; });
   }
