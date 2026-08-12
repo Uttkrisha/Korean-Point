@@ -1,34 +1,36 @@
 'use strict';
-/* Quick View modal, modal/drawer open-close helpers, checkout flow */
+/* Quick View modal, modal/drawer open-close helpers, checkout modal.
+   Add-to-cart and checkout are real HTML forms that POST to
+   actions/cart.php and actions/checkout.php and reload the page —
+   no fetch() anywhere. */
 
 function openQuickView(id) {
   const p = byId(id);
   if (!p) return;
-  const off = p.was > p.price ? Math.round((1 - p.price / p.was) * 100) : 0;
+  const redirect = location.pathname + location.search;
   $('#qvBody').innerHTML = `
     <div class="qv__media"><img src="${p.img}" alt="${p.name}" /></div>
     <div class="qv__info">
       <span class="qv__brand">${p.brand}</span>
       <h2 class="qv__name" id="qvName">${p.name}</h2>
-      <div class="card__rating"><span class="stars">${starString(p.rating)}</span><span>${p.rating} (${p.reviews} reviews)</span></div>
-      <div class="qv__price"><span class="now">${fmt(p.price)}</span>${off ? `<span class="was">${fmt(p.was)}</span><span class="off">-${off}%</span>` : ''}</div>
+      <div class="qv__price"><span class="now">${fmt(p.price)}</span></div>
       <p class="qv__desc">${p.desc}</p>
-      <div class="qv__row">
+      <form class="qv__row" method="post" action="../actions/cart.php">
+        <input type="hidden" name="action" value="add" />
+        <input type="hidden" name="id" value="${p.id}" />
+        <input type="hidden" name="redirect" value="${redirect}" />
         <div class="qty">
-          <button id="qvDec" aria-label="Decrease quantity">−</button>
+          <button type="button" id="qvDec" aria-label="Decrease quantity">−</button>
           <span id="qvQty">1</span>
-          <button id="qvInc" aria-label="Increase quantity">+</button>
+          <button type="button" id="qvInc" aria-label="Increase quantity">+</button>
         </div>
-        <button class="btn btn--primary" id="qvAdd">Add to Cart</button>
-      </div>
+        <input type="hidden" name="qty" id="qvQtyInput" value="1" />
+        <button class="btn btn--primary" type="submit">Add to Cart</button>
+      </form>
     </div>`;
   let qty = 1;
-  $('#qvDec').addEventListener('click', () => { qty = Math.max(1, qty - 1); $('#qvQty').textContent = qty; });
-  $('#qvInc').addEventListener('click', () => { qty += 1; $('#qvQty').textContent = qty; });
-  $('#qvAdd').addEventListener('click', async () => {
-    for (let i = 0; i < qty; i++) await addToCart(id, i > 0);
-    closeModal('#quickModal');
-  });
+  $('#qvDec').addEventListener('click', () => { qty = Math.max(1, qty - 1); $('#qvQty').textContent = qty; $('#qvQtyInput').value = qty; });
+  $('#qvInc').addEventListener('click', () => { qty += 1; $('#qvQty').textContent = qty; $('#qvQtyInput').value = qty; });
   openModal('#quickModal');
 }
 
@@ -63,41 +65,8 @@ function closeAllOverlays() {
 }
 
 function openCheckout() {
-  const { subtotal } = cartTotals();
-  if (!subtotal) return;
-  $('#coTotal').textContent = fmt(subtotal);
+  if (!CART_SUBTOTAL) return;
+  $('#coTotal').textContent = fmt(CART_SUBTOTAL);
   closeDrawer('#cartDrawer');
   openModal('#checkoutModal');
-}
-async function handleCheckoutSubmit(e) {
-  e.preventDefault();
-  const required = ['coName', 'coEmail', 'coAddr', 'coCity', 'coZip', 'coCard'];
-  const missing = required.some((id) => !$('#' + id).value.trim());
-  const err = $('#coError');
-  if (missing) { err.textContent = 'Please fill in every field.'; err.hidden = false; return; }
-
-  // Only the customer's shipping details are sent — the server reads the
-  // cart and looks up prices from MySQL itself, it never trusts the browser.
-  const order = {
-    name: $('#coName').value.trim(),
-    email: $('#coEmail').value.trim(),
-    address: $('#coAddr').value.trim(),
-    city: $('#coCity').value.trim(),
-    zip: $('#coZip').value.trim(),
-  };
-
-  const res = await fetch('../api/orders.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(order),
-  });
-  const data = await res.json();
-  if (!res.ok) { err.textContent = data.error || 'Something went wrong. Please try again.'; err.hidden = false; return; }
-
-  err.hidden = true;
-  closeModal('#checkoutModal');
-  $('#orderId').textContent = '#' + data.id;
-  openModal('#successModal');
-  await refreshCart();
-  $('#coForm').reset();
 }

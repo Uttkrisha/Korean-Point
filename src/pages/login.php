@@ -4,6 +4,30 @@ if (isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit;
 }
+
+$error = '';
+$email = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once __DIR__ . '/../../config/database.php';
+
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    $stmt = $pdo->prepare('SELECT id, name, email, password FROM users WHERE email = ?');
+    $stmt->execute([strtolower($email)]);
+    $user = $stmt->fetch();
+
+    if (!$user || !password_verify($password, $user['password'])) {
+        $error = 'Invalid email or password.';
+    } else {
+        $_SESSION['user_id'] = (int) $user['id'];
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['user_email'] = $user['email'];
+        header('Location: index.php');
+        exit;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -31,16 +55,18 @@ if (isset($_SESSION['user_id'])) {
     <h1>Welcome back</h1>
     <p class="section__sub">Log in to shop your Korean skincare routine.</p>
 
-    <form class="auth-form" id="loginForm" novalidate>
+    <form class="auth-form" method="post" action="login.php">
       <div class="field">
         <label for="loginEmail">Email</label>
-        <input id="loginEmail" type="email" required autocomplete="email" />
+        <input id="loginEmail" name="email" type="email" required autocomplete="email" value="<?php echo htmlspecialchars($email); ?>" />
       </div>
       <div class="field">
         <label for="loginPassword">Password</label>
-        <input id="loginPassword" type="password" required autocomplete="current-password" />
+        <input id="loginPassword" name="password" type="password" required autocomplete="current-password" />
       </div>
-      <p class="auth-form__error" id="loginError" role="alert" hidden></p>
+      <?php if ($error): ?>
+        <p class="auth-form__error" role="alert"><?php echo htmlspecialchars($error); ?></p>
+      <?php endif; ?>
       <button class="btn btn--primary btn--block" type="submit">Log In</button>
     </form>
 
@@ -48,6 +74,5 @@ if (isset($_SESSION['user_id'])) {
   </div>
 </main>
 
-<script src="../js/login.js"></script>
 </body>
 </html>

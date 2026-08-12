@@ -4,6 +4,10 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../includes/catalog_data.php';
+$checkoutError = $_GET['checkout_error'] ?? '';
+$selfRedirect = $_SERVER['REQUEST_URI'];
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -50,7 +54,7 @@ if (!isset($_SESSION['user_id'])) {
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 13.2A8.5 8.5 0 1 1 10.8 3a6.8 6.8 0 0 0 10.2 10.2z"/></svg>
       </button>
       <button class="icon-btn" id="cartToggle" aria-label="Open shopping cart">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1.2 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2.5l2.36 12.19a2 2 0 0 0 2 1.63h8.4a2 2 0 0 0 1.97-1.63L21.5 8H6.1"/></svg>
         <span class="badge" id="cartCount">0</span>
       </button>
       <button class="btn btn--ghost btn--sm" id="logoutBtn" type="button">Logout</button>
@@ -146,9 +150,9 @@ if (!isset($_SESSION['user_id'])) {
   </header>
   <div class="drawer__body" id="cartItems"><!-- JS --></div>
   <footer class="drawer__foot">
-    <div class="drawer__row"><span>Subtotal</span><strong id="cartSubtotal">$0.00</strong></div>
+    <div class="drawer__row"><span>Subtotal</span><strong id="cartSubtotal">NPR 0.00</strong></div>
     <div class="drawer__row drawer__row--muted"><span>Shipping</span><span id="cartShip">Free</span></div>
-    <div class="drawer__row drawer__row--total"><span>Total</span><strong id="cartTotal">$0.00</strong></div>
+    <div class="drawer__row drawer__row--total"><span>Total</span><strong id="cartTotal">NPR 0.00</strong></div>
     <button class="btn btn--primary btn--block" id="checkoutBtn">Checkout</button>
     <button class="btn btn--ghost btn--block btn--sm" id="cartToggleClose">Continue shopping</button>
   </footer>
@@ -172,28 +176,19 @@ if (!isset($_SESSION['user_id'])) {
     </button>
     <h2 id="coTitle" class="modal__title">Checkout</h2>
     <p class="modal__sub">Demo only — no payment is processed.</p>
-    <form class="co-form" id="coForm" novalidate>
-      <div class="field"><label for="coName">Full name</label><input id="coName" required autocomplete="name" /></div>
-      <div class="field"><label for="coEmail">Email</label><input id="coEmail" type="email" required autocomplete="email" /></div>
-      <div class="field field--full"><label for="coAddr">Address</label><input id="coAddr" required autocomplete="street-address" /></div>
-      <div class="field"><label for="coCity">City</label><input id="coCity" required autocomplete="address-level2" /></div>
-      <div class="field"><label for="coZip">Postal code</label><input id="coZip" required autocomplete="postal-code" /></div>
-      <div class="field field--full"><label for="coCard">Card number</label><input id="coCard" inputmode="numeric" placeholder="4242 4242 4242 4242" required /></div>
+    <form class="co-form" id="coForm" method="post" action="../actions/checkout.php">
+      <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($selfRedirect); ?>" />
+      <div class="field"><label for="coName">Full name</label><input id="coName" name="name" required autocomplete="name" /></div>
+      <div class="field"><label for="coEmail">Email</label><input id="coEmail" name="email" type="email" required autocomplete="email" /></div>
+      <div class="field field--full"><label for="coAddr">Address</label><input id="coAddr" name="address" required autocomplete="street-address" /></div>
+      <div class="field"><label for="coCity">City</label><input id="coCity" name="city" required autocomplete="address-level2" /></div>
+      <div class="field"><label for="coPhone">Phone number</label><input id="coPhone" name="phone" type="tel" required autocomplete="tel" /></div>
       <p class="co-form__error" id="coError" role="alert" hidden></p>
       <div class="co-form__foot">
-        <span>Total <strong id="coTotal">$0.00</strong></span>
+        <span>Total <strong id="coTotal">NPR 0.00</strong></span>
         <button class="btn btn--primary" type="submit">Place order</button>
       </div>
     </form>
-  </div>
-</div>
-
-<div class="modal" id="successModal" role="dialog" aria-modal="true" aria-labelledby="okTitle" hidden>
-  <div class="modal__panel modal__panel--center">
-    <div class="tick" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-16"/></svg></div>
-    <h2 id="okTitle" class="modal__title">Order confirmed</h2>
-    <p class="modal__sub">Order <strong id="orderId">#KP-0000</strong> is on its way. A receipt is in your inbox.</p>
-    <button class="btn btn--primary" id="okClose">Keep glowing</button>
   </div>
 </div>
 
@@ -203,8 +198,17 @@ if (!isset($_SESSION['user_id'])) {
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
+<script>
+  const PRODUCTS = <?php echo json_encode($products); ?>;
+  const CATEGORIES = <?php echo json_encode($categories); ?>;
+  const CART_ITEMS = <?php echo json_encode($cartItems); ?>;
+  const CART_SUBTOTAL = <?php echo json_encode($cartSubtotal); ?>;
+  const CART_COUNT = <?php echo json_encode($cartCount); ?>;
+  <?php if ($checkoutError): ?>
+  window.__checkoutError = <?php echo json_encode($checkoutError); ?>;
+  <?php endif; ?>
+</script>
 <script src="../js/data.js"></script>
-<script src="../js/load-data.js"></script>
 <script src="../js/state.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/catalog.js"></script>

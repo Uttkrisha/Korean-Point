@@ -1,24 +1,14 @@
 'use strict';
 /* Global click delegation + app bootstrap.
    The same script list runs on every page, so each render/setup call
-   is guarded by whether that page actually has the matching element. */
+   is guarded by whether that page actually has the matching element.
+   PRODUCTS/CATEGORIES/CART_ITEMS are embedded by PHP before this runs —
+   nothing here waits on a fetch(). */
 
 function setupDelegation() {
   document.addEventListener('click', (e) => {
-    const add = e.target.closest('[data-add]');
-    if (add) addToCart(add.dataset.add);
-
     const quick = e.target.closest('[data-quick]');
     if (quick) openQuickView(quick.dataset.quick);
-
-    const inc = e.target.closest('[data-inc]');
-    if (inc) { const c = cartData.items.find((x) => x.id === inc.dataset.inc); if (c) setQty(inc.dataset.inc, c.qty + 1); }
-
-    const dec = e.target.closest('[data-dec]');
-    if (dec) { const c = cartData.items.find((x) => x.id === dec.dataset.dec); if (c) setQty(dec.dataset.dec, c.qty - 1); }
-
-    const remove = e.target.closest('[data-remove]');
-    if (remove) removeFromCart(remove.dataset.remove);
   });
 
   $('#cartToggle').addEventListener('click', () => openDrawer('#cartDrawer'));
@@ -29,8 +19,6 @@ function setupDelegation() {
   $('#qvClose').addEventListener('click', () => closeModal('#quickModal'));
   $('#checkoutBtn').addEventListener('click', openCheckout);
   $('#coClose').addEventListener('click', () => closeModal('#checkoutModal'));
-  $('#coForm').addEventListener('submit', handleCheckoutSubmit);
-  $('#okClose').addEventListener('click', () => closeModal('#successModal'));
 
   $$('.modal').forEach((m) => m.addEventListener('click', (e) => { if (e.target === m) closeModal('#' + m.id); }));
 
@@ -40,9 +28,7 @@ function setupDelegation() {
   $('#logoutBtn')?.addEventListener('click', logout);
 }
 
-async function init() {
-  await dataLoaded;
-
+function init() {
   if ($('#productGrid')) {
     // shop page can arrive with ?category=Serums or ?q=toner from other pages
     const params = new URLSearchParams(location.search);
@@ -59,7 +45,7 @@ async function init() {
   if ($('#reviewTrack')) renderReviews();
   if ($('#igGrid')) renderIg();
   if ($('#faqList')) renderFaq();
-  await renderCart();
+  renderCart();
 
   if ($('#baRange')) setupBeforeAfter();
   setupNav();
@@ -67,6 +53,15 @@ async function init() {
   setupTheme();
   setupBackTop();
   setupDelegation();
+
+  // Checkout failed server-side and redirected back here with an error —
+  // reopen the checkout modal and show it.
+  if (window.__checkoutError) {
+    $('#coError').textContent = window.__checkoutError;
+    $('#coError').hidden = false;
+    closeDrawer('#cartDrawer');
+    openModal('#checkoutModal');
+  }
 
   lazyize();
 

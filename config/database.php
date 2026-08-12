@@ -1,13 +1,10 @@
 <?php
-/* One shared PDO connection for the whole app. Every PHP file that needs
-   the database does require_once __DIR__ . '/../../config/database.php'
-   (path depends on how deep the file is) and then uses $pdo. */
+
 
 $DB_HOST = 'localhost';
 $DB_NAME = 'korean_point';
 $DB_USER = 'root';
-$DB_PASS = ''; // XAMPP's MySQL root user has no password by default —
-                // if you set one in phpMyAdmin/MySQL, put it here.
+$DB_PASS = ''; 
 
 try {
     $pdo = new PDO(

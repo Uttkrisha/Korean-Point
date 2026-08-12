@@ -43,26 +43,30 @@ function syncChips() {
 }
 
 function productCard(p) {
-  const off = p.was > p.price ? Math.round((1 - p.price / p.was) * 100) : 0;
   const badgeMap = { best: '<span class="tag tag--best">Best Seller</span>', new: '<span class="tag tag--new">New</span>', vegan: '<span class="tag tag--vegan">Vegan</span>' };
   return `<article class="card" data-id="${p.id}">
     <div class="card__media">
-      <div class="card__badges">${p.badges.map((b) => badgeMap[b] || '').join('')}${off ? `<span class="tag tag--sale">-${off}%</span>` : ''}</div>
+      <div class="card__badges">${p.badges.map((b) => badgeMap[b] || '').join('')}</div>
       <img data-src="${p.img}" alt="${p.name}" loading="lazy" />
     </div>
     <div class="card__body">
       <span class="card__brand">${p.brand}</span>
       <h3 class="card__name">${p.name}</h3>
-      <div class="card__rating"><span class="stars">${starString(p.rating)}</span><span>${p.rating} (${p.reviews})</span></div>
-      <div class="card__price"><span class="now">${fmt(p.price)}</span>${off ? `<span class="was">${fmt(p.was)}</span>` : ''}</div>
+      <div class="card__price"><span class="now">${fmt(p.price)}</span></div>
     </div>
     <div class="card__foot">
       <button class="quick-btn" data-quick="${p.id}" type="button">Quick View</button>
-      <button class="add-btn" data-add="${p.id}" type="button">Add to Cart</button>
+      <form class="add-form" method="post" action="../actions/cart.php">
+        <input type="hidden" name="action" value="add" />
+        <input type="hidden" name="id" value="${p.id}" />
+        <input type="hidden" name="redirect" value="${location.pathname}${location.search}" />
+        <button class="add-btn" type="submit">Add to Cart</button>
+      </form>
     </div>
   </article>`;
 }
 
+// Actual filter garxa 
 function getFilteredProducts() {
   let list = PRODUCTS.slice();
   if (state.category !== 'All') list = list.filter((p) => p.category === state.category);
@@ -73,7 +77,6 @@ function getFilteredProducts() {
   switch (state.sort) {
     case 'price-asc': list.sort((a, b) => a.price - b.price); break;
     case 'price-desc': list.sort((a, b) => b.price - a.price); break;
-    case 'rating': list.sort((a, b) => b.rating - a.rating); break;
     case 'new': list.sort((a, b) => new Date(b.date) - new Date(a.date)); break;
     default: list.sort((a, b) => (b.badges.includes('best') ? 1 : 0) - (a.badges.includes('best') ? 1 : 0));
   }

@@ -1,48 +1,14 @@
 'use strict';
-/* Shopping cart — backed by the PHP session (see api/cart.php).
-   The server always returns fresh product name/price/image looked up
-   from MySQL, so the browser never has to be trusted with prices. */
+/* Shopping cart — CART_ITEMS/CART_SUBTOTAL/CART_COUNT are embedded into
+   the page by PHP (see includes/catalog_data.php) from the session cart.
+   Quantity/remove buttons are real forms posting to actions/cart.php —
+   no fetch(), the whole page just reloads after each change. */
 
-let cartData = { items: [], subtotal: 0, count: 0 };
-
-function cartTotals() {
-  return cartData;
-}
-
-async function postCart(body) {
-  const res = await fetch('../api/cart.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  cartData = await res.json();
-  paintCart();
-  return cartData;
-}
-
-async function refreshCart() {
-  const res = await fetch('../api/cart.php');
-  cartData = await res.json();
-  paintCart();
-}
-
-async function addToCart(id, silent = false) {
-  await postCart({ action: 'add', id });
-  if (!silent) toast(`${byId(id)?.name || 'Item'} added to cart`, '🛍️');
-}
-async function removeFromCart(id) {
-  await postCart({ action: 'remove', id });
-  toast('Item removed', '🗑️');
-}
-async function setQty(id, qty) {
-  await postCart({ action: 'setQty', id, qty: Math.max(1, qty) });
-}
-
-function paintCart() {
-  const { items, subtotal, count } = cartData;
-  $('#cartCount').textContent = count;
+function renderCart() {
+  const redirect = location.pathname + location.search;
+  $('#cartCount').textContent = CART_COUNT;
   const box = $('#cartItems');
-  box.innerHTML = items.length ? items.map((c) => `
+  box.innerHTML = CART_ITEMS.length ? CART_ITEMS.map((c) => `
     <div class="cart-item" data-id="${c.id}">
       <img src="${c.img}" alt="${c.name}" />
       <div class="cart-item__info">
@@ -50,19 +16,32 @@ function paintCart() {
         <p class="cart-item__price">${fmt(c.price)}</p>
         <div class="cart-item__actions">
           <div class="qty">
-            <button data-dec="${c.id}" aria-label="Decrease quantity">−</button>
+            <form method="post" action="../actions/cart.php">
+              <input type="hidden" name="action" value="setQty" />
+              <input type="hidden" name="id" value="${c.id}" />
+              <input type="hidden" name="qty" value="${c.qty - 1}" />
+              <input type="hidden" name="redirect" value="${redirect}" />
+              <button type="submit" aria-label="Decrease quantity" ${c.qty <= 1 ? 'disabled' : ''}>−</button>
+            </form>
             <span>${c.qty}</span>
-            <button data-inc="${c.id}" aria-label="Increase quantity">+</button>
+            <form method="post" action="../actions/cart.php">
+              <input type="hidden" name="action" value="setQty" />
+              <input type="hidden" name="id" value="${c.id}" />
+              <input type="hidden" name="qty" value="${c.qty + 1}" />
+              <input type="hidden" name="redirect" value="${redirect}" />
+              <button type="submit" aria-label="Increase quantity">+</button>
+            </form>
           </div>
-          <button class="cart-item__remove" data-remove="${c.id}">Remove</button>
+          <form method="post" action="../actions/cart.php">
+            <input type="hidden" name="action" value="remove" />
+            <input type="hidden" name="id" value="${c.id}" />
+            <input type="hidden" name="redirect" value="${redirect}" />
+            <button class="cart-item__remove" type="submit">Remove</button>
+          </form>
         </div>
       </div>
     </div>`).join('') : '<p class="drawer__empty">Your cart is empty.</p>';
-  $('#cartSubtotal').textContent = fmt(subtotal);
-  $('#cartTotal').textContent = fmt(subtotal);
-  $('#checkoutBtn').disabled = items.length === 0;
-}
-
-async function renderCart() {
-  await refreshCart();
+  $('#cartSubtotal').textContent = fmt(CART_SUBTOTAL);
+  $('#cartTotal').textContent = fmt(CART_SUBTOTAL);
+  $('#checkoutBtn').disabled = CART_ITEMS.length === 0;
 }

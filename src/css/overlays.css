@@ -22,7 +22,9 @@
 .cart-item__price { font-size: .82rem; color: var(--text-soft); margin-top: 2px; }
 .cart-item__actions { display: flex; align-items: center; gap: var(--space-3); margin-top: 8px; }
 .qty { display: flex; align-items: center; border: 1px solid var(--border); border-radius: var(--radius); }
+.qty form { margin: 0; }
 .qty button { width: 26px; height: 26px; font-size: 1rem; }
+.qty button[disabled] { opacity: .4; cursor: default; }
 .qty span { min-width: 22px; text-align: center; font-size: .85rem; }
 .cart-item__remove { font-size: .78rem; color: #c8443a; text-decoration: underline; }
 
@@ -48,14 +50,13 @@
 .qv__name { font-family: var(--font-display); font-size: 1.4rem; margin: 6px 0; }
 .qv__price { display: flex; gap: 10px; align-items: baseline; margin: var(--space-3) 0; }
 .qv__price .now { font-size: 1.5rem; font-weight: 700; }
-.qv__price .was { text-decoration: line-through; color: var(--text-soft); }
 .qv__desc { color: var(--text-soft); font-size: .9rem; line-height: 1.6; margin-bottom: var(--space-4); }
 .qv__row { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-5); }
 
-.field { display: flex; flex-direction: column; gap: 6px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field--full { grid-column: 1 / -1; }
 .field label { font-size: .78rem; font-weight: 600; color: var(--text-soft); }
-.field input { padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+.field input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
 .co-form { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-3); }
 .co-form__error { grid-column: 1/-1; color: #c8443a; font-size: .82rem; }
 .co-form__foot { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-3); }

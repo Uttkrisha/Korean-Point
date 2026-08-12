@@ -27,21 +27,17 @@
 .tag--new { background: var(--sage); color: #163420; }
 .tag--best { background: var(--ink); color: var(--white); }
 .tag--vegan { background: var(--pink); color: #5c1f2b; }
-.tag--sale { background: #c8443a; color: var(--white); }
 
 .card__body { padding: var(--space-4); display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .card__brand { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--sage-deep); font-weight: 700; }
 .card__name { font-weight: 600; font-size: .95rem; line-height: 1.35; }
-.card__rating { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--text-soft); }
-.stars { color: #e6a940; letter-spacing: 1px; font-size: .82rem; }
 .card__price { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
 .card__price .now { font-weight: 700; font-size: 1.05rem; }
-.card__price .was { text-decoration: line-through; color: var(--text-soft); font-size: .85rem; }
-.card__price .off { color: #c8443a; font-size: .78rem; font-weight: 700; }
 
 .card__foot { padding: 0 var(--space-4) var(--space-4); margin-top: auto; display: flex; gap: 8px; }
+.card__foot .add-form { flex: 1; display: flex; }
 .add-btn, .quick-btn {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
   border: 1.5px solid var(--ink); border-radius: var(--radius); padding: 9px; font-weight: 600; font-size: .82rem;
   transition: background var(--dur), color var(--dur);
 }

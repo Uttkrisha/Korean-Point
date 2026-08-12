@@ -3,7 +3,7 @@
    and logout (destroys the PHP session). */
 
 function logout() {
-  location.href = '../api/logout.php';
+  location.href = '../actions/logout.php';
 }
 
 function setupNav() {
@@ -25,6 +25,7 @@ function setupNav() {
   $$('.nav__link').forEach((l) => l.classList.toggle('is-active', l.getAttribute('href') === here));
 }
 
+//search bar toggle and search input handling (on shop page, filter products; on other pages, jump to shop page)
 function setupSearch() {
   const toggle = $('#searchToggle');
   const bar = $('#searchbar');

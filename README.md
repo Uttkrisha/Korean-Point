@@ -1,7 +1,9 @@
 # Korean Point — Korean Skincare eCommerce
 
 Multi-page Korean-beauty storefront demo with login/register gating, a
-PHP backend and a MySQL database (`korean_point`).
+PHP backend and a MySQL database (`korean_point`). No AJAX/JSON API layer —
+every page is server-rendered PHP, and every action (login, add to cart,
+checkout) is a plain HTML `<form>` POST that redirects back to a page.
 
 ## Tech Stack
 
@@ -9,10 +11,10 @@ PHP backend and a MySQL database (`korean_point`).
 - **CSS3** — no framework, split into small files under `src/css/`, flat
   design (solid colors, simple borders, small radius, no glassmorphism/
   gradients/animations)
-- **Vanilla JavaScript (ES6+)** — split into small files under `src/js/`, loaded as classic `<script>` tags sharing one global scope
-- **PHP 8** with **PDO + prepared statements** as the backend — see `config/database.php` and `src/api/*.php`
+- **Vanilla JavaScript (ES6+)** — split into small files under `src/js/`, loaded as classic `<script>` tags sharing one global scope. Used only for in-page rendering (product grid, cart drawer, modals) from data PHP already embedded in the page — there is no `fetch()`/AJAX anywhere.
+- **PHP 8** with **PDO + prepared statements** as the backend — see `config/database.php`, `src/includes/catalog_data.php`, and `src/actions/*.php`
 - **MySQL** (`korean_point` database: `users`, `products`, `orders`, `order_items`) for persistent data
-- `src/data/categories.json` / `brands.json` remain static JSON — they're editorial catalog metadata, not part of the MySQL schema
+- `src/data/categories.json` remains static JSON — it's editorial catalog metadata, not part of the MySQL schema
 - **Fonts:** Google Fonts — Poppins + Noto Sans KR
 
 ## Run (XAMPP)
@@ -29,64 +31,82 @@ PHP backend and a MySQL database (`korean_point`).
 4. Open `http://localhost/korean-point/src/pages/login.php`.
 5. If your MySQL root user has a password, set it in `config/database.php`.
 
-## Why PHP + MySQL
+## How pages get their data (no API calls)
 
-The site needs to *persist* users, products, and orders. `config/database.php`
-holds one shared PDO connection, and `src/api/*.php` are small JSON endpoints
-the frontend JS talks to via `fetch()`:
-- `POST src/api/register.php` — validates + creates a user, hashes the password with `password_hash()`
-- `POST src/api/login.php` — verifies with `password_verify()`, starts a PHP session
-- `GET  src/api/logout.php` — destroys the session
-- `GET  src/api/products.php` — reads the product catalog from MySQL
-- `GET/POST src/api/cart.php` — the shopping cart, stored server-side in `$_SESSION['cart']`
-- `POST src/api/orders.php` — checkout: looks up cart contents + prices from MySQL (never trusts the browser) and writes `orders` + `order_items` inside one transaction
+Every gated page (`index.php`, `shop.php`, `about.php`) starts the same way:
+checks `$_SESSION['user_id']` and redirects to `login.php` if missing, then
+`require`s `src/includes/catalog_data.php`, which queries MySQL for the
+product catalog and builds the current cart (from `$_SESSION['cart']` +
+product prices). The page embeds all of that straight into a `<script>`
+block as plain JS globals (`PRODUCTS`, `CATEGORIES`, `CART_ITEMS`,
+`CART_SUBTOTAL`, `CART_COUNT`) before any other script runs — `catalog.js`
+and `cart.js` just read those globals and render HTML, no network request
+involved.
 
-`src/pages/index.php`, `shop.php`, and `about.php` each start with a PHP
-session check that redirects to `login.php` when nobody is signed in — no
-client-side auth flash. `login.php` / `register.php` redirect to `index.php`
-when a session already exists.
+Every action that changes something is a real `<form method="post">`:
+- `login.php` / `register.php` — self-submitting: same file shows the form
+  (GET) and processes it (POST), redirecting to `index.php` on success or
+  re-rendering with an error.
+- `src/actions/logout.php` — destroys the session, redirects to `login.php`.
+- `src/actions/cart.php` — add / remove / change quantity. Every card's
+  "Add to Cart" button, and every qty +/− and Remove button in the cart
+  drawer, is its own tiny form posting here, then redirecting back to
+  whichever page it was submitted from (a hidden `redirect` field, checked
+  against an allow-list pattern so it can only point back into the app).
+- `src/actions/checkout.php` — reads the **session** cart (never anything
+  the browser claims), looks up live prices from MySQL, and inserts
+  `orders` + `order_items` inside one transaction. On success it redirects
+  to `order-success.php?id=...`; on failure it redirects back to the
+  originating page with `?checkout_error=...`, which the page picks up and
+  uses to reopen the checkout modal with the error shown.
+
+Because every mutation is a full page POST-redirect-GET, there is no
+optimistic/instant UI for cart changes — clicking "Add to Cart" reloads the
+page. That's a deliberate trade-off for keeping this a plain server-rendered
+PHP app instead of a JSON API + fetch() architecture.
 
 ## Folder structure
 
 ```
 config/
-  database.php               shared PDO connection
+  database.php                shared PDO connection
 
 src/
-  api/
-    register.php / login.php / logout.php    auth endpoints
-    products.php                                reads MySQL products table
-    cart.php                                      session-based cart
-    orders.php                                     checkout transaction
+  includes/
+    catalog_data.php          queries MySQL for products + builds the cart from $_SESSION, included by every gated page
+
+  actions/
+    cart.php                  add / remove / setQty — POST + redirect back
+    checkout.php               reads session cart, writes orders + order_items in a transaction
+    logout.php                   destroys the session
 
   data/
-    categories.json          6 shop-by-need categories (static)
-    brands.json                brand list (static)
+    categories.json           6 shop-by-need categories (static)
+    brands.json                 brand list (static, currently unused by any page)
 
   pages/
-    login.php                gate — shown first if not logged in
-    register.php               name / email / birthdate / password
-    index.php                    Home: hero, categories, before/after, reviews, IG, FAQ
-    shop.php                       Shop: filter chips, search, sort, full product grid
-    about.php                        Why Korean Skincare + the 4-step routine
+    login.php                 self-submitting login form + gate
+    register.php                self-submitting registration form
+    index.php                     Home: hero, categories, before/after, reviews, IG, FAQ
+    shop.php                        Shop: filter chips, search, sort, full product grid
+    about.php                         Why Korean Skincare + the 4-step routine
+    order-success.php                   shown after a successful checkout
 
-  css/                       one small file per section: variables, base,
-                               nav, hero, products, content, footer, overlays,
-                               effects, responsive, auth
+  css/                        one small file per section: variables, base,
+                                nav, hero, products, content, footer, overlays,
+                                effects, responsive, auth
 
   js/
-    data.js                  editorial content (why/routine/reviews/IG/FAQ copy)
-    load-data.js               fetches products from api/products.php + categories.json at startup
+    data.js                   editorial content (why/routine/reviews/IG/FAQ copy)
     state.js                    localStorage theme helper, shared app state, $/$$/fmt/byId
-    utils.js                     toast, lazy-load, star markup
-    catalog.js                    categories, filter chips, product cards, why/timeline/FAQ/IG
-    reviews.js                     reviews slider (prev/next + dots)
-    cart.js                         cart rendering, backed by api/cart.php (PHP session)
-    modals.js                        quick view, modal/drawer helpers, checkout (POSTs to api/orders.php)
-    before-after.js                   before/after image slider
-    nav-ui.js                          navbar, search, theme toggle, back-to-top, logout()
-    login.js / register.js               form handling + validation for those two pages
-    main.js                               event delegation + page bootstrap (loaded last)
+    utils.js                      toast, lazy-load, star markup
+    catalog.js                      categories, filter chips, product cards (renders from PRODUCTS/CATEGORIES)
+    reviews.js                        reviews slider (prev/next + dots)
+    cart.js                             renders the cart drawer from CART_ITEMS
+    modals.js                            quick view, modal/drawer helpers, checkout modal open/close
+    before-after.js                        before/after image slider
+    nav-ui.js                                navbar, search, theme toggle, back-to-top, logout()
+    main.js                                    event delegation + page bootstrap (loaded last)
 ```
 
 Every gated page loads the exact same list of `<script>` tags; `main.js`
@@ -97,27 +117,32 @@ per-page wiring.
 ## Validation & Security
 
 - **Register**: name (letters only, 2-50 chars), email (regex), birthdate
-  (HTML `max` attribute is set to today at page load, and `api/register.php`
-  double-checks it isn't in the future), password (6+ chars), confirm
-  password must match. The server also rejects duplicate emails and hashes
-  passwords with `password_hash()` — nothing is ever stored in plain text.
-- **Login**: `api/login.php` checks the email against MySQL and verifies the
+  (HTML `max` attribute plus a server-side check that it isn't in the
+  future), password (6+ chars), confirm password must match. The server
+  also rejects duplicate emails and hashes passwords with `password_hash()`
+  — nothing is ever stored in plain text.
+- **Login**: `login.php` checks the email against MySQL and verifies the
   password with `password_verify()`, then starts a PHP session.
 - **Cart & checkout**: the cart lives in `$_SESSION['cart']` (product id →
   quantity), never in the browser. Every price shown or charged is read
   fresh from the `products` table at request time, so a tampered client
   request can't change what gets charged. Checkout runs inside a MySQL
   transaction — if any insert fails, the whole order is rolled back.
+- **Redirect targets**: the hidden `redirect` field on cart/checkout forms
+  is validated against a strict pattern (must be a relative `.php` path
+  within the app) before being used in a `Location` header, so it can't be
+  turned into an open redirect to an external site.
 - All SQL goes through PDO prepared statements — no string-built queries.
 
 ## Features
 
 Login/register gate on every page · product catalog with category filter,
 search, sort · shopping cart drawer with quantity controls and totals ·
-quick-view modal · checkout that saves a real order to MySQL · order-success
-modal with a real order ID · reviews slider · before/after slider · FAQ
-accordion · Instagram-style gallery · dark mode toggle (light by default) ·
-back-to-top · toast notifications · lazy-loaded images.
+quick-view modal · checkout that saves a real order to MySQL · a dedicated
+order-confirmation page with the real order ID · reviews slider ·
+before/after slider · FAQ accordion · Instagram-style gallery · dark mode
+toggle (light by default) · back-to-top · toast notifications · lazy-loaded
+images.
 
 ## What was simplified
 

@@ -14,6 +14,6 @@ const state = {
 };
 
 const byId = (id) => PRODUCTS.find((p) => p.id === id);
-const fmt = (n) => '$' + n.toFixed(2);
+const fmt = (n) => 'NPR ' + n.toFixed(2);
 const $ = (sel, ctx = document) => ctx.querySelector(sel);
 const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
