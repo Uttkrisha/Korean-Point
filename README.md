@@ -17,53 +17,7 @@ checkout) is a plain HTML `<form>` POST that redirects back to a page.
 - `src/data/categories.json` remains static JSON — it's editorial catalog metadata, not part of the MySQL schema
 - **Fonts:** Google Fonts — Poppins + Noto Sans KR
 
-## Run (XAMPP)
 
-1. Start **Apache** and **MySQL** from the XAMPP Control Panel.
-2. Make sure the `korean_point` database exists with the `users`, `products`,
-   `orders`, `order_items` tables (already set up in phpMyAdmin).
-3. Serve this folder through Apache — either place the project under
-   `C:\xampp\htdocs\korean-point`, or create a junction so it's reachable
-   there without moving anything:
-   ```
-   mklink /J C:\xampp\htdocs\korean-point "<path to this project>"
-   ```
-4. Open `http://localhost/korean-point/src/pages/login.php`.
-5. If your MySQL root user has a password, set it in `config/database.php`.
-
-## How pages get their data (no API calls)
-
-Every gated page (`index.php`, `shop.php`, `about.php`) starts the same way:
-checks `$_SESSION['user_id']` and redirects to `login.php` if missing, then
-`require`s `src/includes/catalog_data.php`, which queries MySQL for the
-product catalog and builds the current cart (from `$_SESSION['cart']` +
-product prices). The page embeds all of that straight into a `<script>`
-block as plain JS globals (`PRODUCTS`, `CATEGORIES`, `CART_ITEMS`,
-`CART_SUBTOTAL`, `CART_COUNT`) before any other script runs — `catalog.js`
-and `cart.js` just read those globals and render HTML, no network request
-involved.
-
-Every action that changes something is a real `<form method="post">`:
-- `login.php` / `register.php` — self-submitting: same file shows the form
-  (GET) and processes it (POST), redirecting to `index.php` on success or
-  re-rendering with an error.
-- `src/actions/logout.php` — destroys the session, redirects to `login.php`.
-- `src/actions/cart.php` — add / remove / change quantity. Every card's
-  "Add to Cart" button, and every qty +/− and Remove button in the cart
-  drawer, is its own tiny form posting here, then redirecting back to
-  whichever page it was submitted from (a hidden `redirect` field, checked
-  against an allow-list pattern so it can only point back into the app).
-- `src/actions/checkout.php` — reads the **session** cart (never anything
-  the browser claims), looks up live prices from MySQL, and inserts
-  `orders` + `order_items` inside one transaction. On success it redirects
-  to `order-success.php?id=...`; on failure it redirects back to the
-  originating page with `?checkout_error=...`, which the page picks up and
-  uses to reopen the checkout modal with the error shown.
-
-Because every mutation is a full page POST-redirect-GET, there is no
-optimistic/instant UI for cart changes — clicking "Add to Cart" reloads the
-page. That's a deliberate trade-off for keeping this a plain server-rendered
-PHP app instead of a JSON API + fetch() architecture.
 
 ## Folder structure
 
@@ -144,11 +98,8 @@ before/after slider · FAQ accordion · Instagram-style gallery · dark mode
 toggle (light by default) · back-to-top · toast notifications · lazy-loaded
 images.
 
-## What was simplified
+## How to start
 
-No wishlist, no Best Sellers/New Arrivals pages, and no decorative
-animation layer (glassmorphism, blurred background blobs, cursor-follow
-glow, ripple click effect, animated gradients, parallax, scroll-reveal,
-auto-rotating carousels). The goal: every CSS rule and JS function should
-be something a first-year CS student could point to and explain in one
-sentence.
+Start apache and mysql in Xampp
+
+http://localhost/korean-point/src/pages/login.php
