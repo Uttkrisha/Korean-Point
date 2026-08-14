@@ -9,7 +9,7 @@ no build step.
 ## Tech Stack
 
 - **PHP 8** with **PDO + prepared statements** — see `config/database.php`
-- **MySQL** (`korean_point` database: `users`, `products`, `orders`, `order_items`)
+- **MySQL** (`skincare_store` database: `users`, `products`, `cart`, `orders`, `order_items` — see `database.sql`)
 - **HTML** rendered directly by each page in `src/pages/*.php`
 - **CSS** — one flat stylesheet, `src/css/style.css`
 - **JavaScript** — one small file, `src/js/script.js`, only for the mobile
@@ -17,32 +17,38 @@ no build step.
   update quantity, remove, checkout, login, register) is a plain HTML
   `<form>` POST that reloads the page — no `fetch()`/AJAX anywhere.
 
+## Database setup
+
+Import `database.sql` (phpMyAdmin → Import, or `mysql -u root < database.sql`).
+It creates the `skincare_store` database, all five tables, six sample
+products, and one admin account (`admin` / `admin123` — login with
+username or email).
+
 ## Folder structure
 
 ```
+database.sql                  schema + sample data
+
 config/
   database.php               PDO connection + starts the session
 
 src/
   includes/
-    functions.php            isLoggedIn(), formatPrice(), getProduct(), cart helpers
+    functions.php            isLoggedIn(), isAdmin(), formatPrice(), getProduct(), cart helpers
     header.php                shared <head> + nav, included by every page
     footer.php                shared footer + closing tags
 
   actions/
-    cart.php                  add / remove / setQty — POST + redirect back
-    checkout.php               reads session cart, writes orders + order_items in a transaction
+    cart.php                  add / remove / setQty on the `cart` table — POST + redirect back
+    checkout.php               reads the cart table, writes orders + order_items in a transaction
     logout.php                   destroys the session
 
-  data/
-    categories.json           category name + icon (static editorial data)
-
   pages/
-    login.php                 login form + gate
+    login.php                 login form (username or email) + gate
     register.php               registration form
     index.php                      home: hero, categories, featured products, FAQ
-    shop.php                        product listing with category/search filter
-    product_details.php               single product page
+    shop.php                        product listing with category/skin type/search filter
+    product_details.php               single product page with stock + skin type
     cart.php                            cart table + checkout form
     about.php                            why Korean skincare + the routine
     order-success.php                     shown after a successful checkout
@@ -56,16 +62,20 @@ src/
 
 ## Validation & Security
 
-- **Register**: name (letters only, 2-50 chars), email (regex), birthdate
-  (not in the future), password (6+ chars), confirm password must match.
-  Duplicate emails are rejected and passwords are hashed with
-  `password_hash()` — nothing is ever stored in plain text.
-- **Login**: checks the email against MySQL and verifies the password
-  with `password_verify()`, then starts a PHP session.
-- **Cart & checkout**: the cart lives in `$_SESSION['cart']` (product id →
-  quantity), never in the browser. Every price shown or charged is read
-  fresh from the `products` table at request time. Checkout runs inside a
-  MySQL transaction — if any insert fails, the whole order is rolled back.
+- **Register**: full name (letters only, 2-50 chars), username (3-20
+  chars, letters/numbers/underscore), email (regex), password (6+
+  chars), confirm password must match. Duplicate usernames/emails are
+  rejected and passwords are hashed with `password_hash()` — nothing is
+  ever stored in plain text.
+- **Login**: accepts username or email, checks it against MySQL and
+  verifies the password with `password_verify()`, then starts a PHP
+  session.
+- **Cart & checkout**: the cart lives in the `cart` table (user_id,
+  product_id, quantity), never in the browser. Every price shown or
+  charged is read fresh from the `products` table at request time.
+  Checkout runs inside a MySQL transaction — order + order_items are
+  written and the cart is cleared together, or nothing is (rolled back
+  on failure).
 - **Redirect targets**: the hidden `redirect` field on cart/checkout forms
   is validated against a strict pattern before being used in a `Location`
   header, so it can't be turned into an open redirect.
@@ -73,14 +83,17 @@ src/
 
 ## Features
 
-Login/register gate on every page · product catalog with category filter
-and search · a real product detail page · a cart page with quantity
-controls and totals · checkout that saves a real order to MySQL · a
-dedicated order-confirmation page with the real order ID · FAQ accordion
-(native `<details>`, no JS).
+Login/register gate on every page · product catalog with category,
+skin type and search filters · a real product detail page showing
+stock and skin type · a cart page with quantity controls and totals ·
+checkout that saves a real order to MySQL · a dedicated
+order-confirmation page with the real order ID · FAQ accordion
+(native `<details>`, no JS) · admin nav link shown when `role = admin`
+(the actual admin pages are a work in progress — `src/admin.php`).
 
 ## How to start
 
-Start Apache and MySQL in XAMPP, then visit:
+Start Apache and MySQL in XAMPP, import `database.sql` if you haven't
+already, then visit:
 
 http://localhost/korean-point/src/pages/login.php

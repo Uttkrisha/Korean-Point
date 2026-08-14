@@ -5,8 +5,12 @@ function isLoggedIn() {
     return isset($_SESSION['user_id']);
 }
 
+function isAdmin() {
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}
+
 function formatPrice($price) {
-    return 'NPR ' . number_format((float) $price, 2);
+    return '$' . number_format((float) $price, 2);
 }
 
 function getProduct($pdo, $id) {
@@ -15,21 +19,23 @@ function getProduct($pdo, $id) {
     return $stmt->fetch();
 }
 
-// Session cart is [product_id => quantity]. Prices are always re-read
-// from the database at checkout time, never trusted from the browser.
-function getCart() {
-    if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
-    return $_SESSION['cart'];
+// Cart lives in the `cart` table (user_id, product_id, quantity) —
+// prices are always re-read from products at checkout time, never
+// trusted from the browser.
+function getCartItems($pdo, $userId) {
+    $stmt = $pdo->prepare(
+        'SELECT c.id AS cart_id, c.quantity, p.* FROM cart c
+         JOIN products p ON c.product_id = p.id
+         WHERE c.user_id = ?'
+    );
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll();
 }
 
-function getCartCount() {
-    $total = 0;
-    foreach (getCart() as $qty) {
-        $total += (int) $qty;
-    }
-    return $total;
+function getCartCount($pdo, $userId) {
+    $stmt = $pdo->prepare('SELECT SUM(quantity) FROM cart WHERE user_id = ?');
+    $stmt->execute([$userId]);
+    return (int) $stmt->fetchColumn();
 }
 
 // Only allow redirecting back to a page inside this app.

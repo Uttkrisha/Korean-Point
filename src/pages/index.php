@@ -8,11 +8,18 @@ if (!isLoggedIn()) {
 }
 
 // Featured products: latest 6
-$products = $pdo->query('SELECT * FROM products ORDER BY product_date DESC LIMIT 6')->fetchAll();
+$products = $pdo->query('SELECT * FROM products ORDER BY created_at DESC LIMIT 6')->fetchAll();
 
 // Categories with product counts
-$categoryIcons = json_decode(file_get_contents(__DIR__ . '/../data/categories.json'), true);
-$counts = $pdo->query('SELECT category, COUNT(*) AS total FROM products GROUP BY category')->fetchAll(PDO::FETCH_KEY_PAIR);
+$categories = $pdo->query('SELECT category, COUNT(*) AS total FROM products GROUP BY category ORDER BY category')->fetchAll();
+
+$categoryIcons = [
+    'Cleanser' => '🧼', 'Toner' => '💧', 'Serum' => '✨', 'Moisturizer' => '🫙',
+    'Sun Protection' => '☀️', 'Treatment' => '💉', 'Exfoliator' => '🍃', 'Mask' => '🍃',
+];
+function categoryIcon($name, $map) {
+    return $map[$name] ?? '🧴';
+}
 
 $why = [
     ['icon' => '🌿', 'title' => 'Natural Ingredients', 'text' => 'Fermented botanicals, centella, ginseng — sourced from Korean farms.'],
@@ -49,11 +56,11 @@ include __DIR__ . '/../includes/header.php';
   <div class="container">
     <h2>Shop by Category</h2>
     <div class="cat-grid">
-      <?php foreach ($categoryIcons as $cat): ?>
-        <a class="cat-card" href="shop.php?category=<?php echo urlencode($cat['name']); ?>">
-          <div class="cat-card__icon"><?php echo $cat['icon']; ?></div>
-          <div class="cat-card__name"><?php echo htmlspecialchars($cat['name']); ?></div>
-          <div class="cat-card__count"><?php echo (int) ($counts[$cat['name']] ?? 0); ?> products</div>
+      <?php foreach ($categories as $cat): ?>
+        <a class="cat-card" href="shop.php?category=<?php echo urlencode($cat['category']); ?>">
+          <div class="cat-card__icon"><?php echo categoryIcon($cat['category'], $categoryIcons); ?></div>
+          <div class="cat-card__name"><?php echo htmlspecialchars($cat['category']); ?></div>
+          <div class="cat-card__count"><?php echo (int) $cat['total']; ?> products</div>
         </a>
       <?php endforeach; ?>
     </div>
@@ -68,7 +75,7 @@ include __DIR__ . '/../includes/header.php';
         <?php foreach ($products as $p): ?>
           <div class="card">
             <div class="card__media">
-              <img src="<?php echo htmlspecialchars($p['image']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" onerror="this.src='https://via.placeholder.com/300x300/a8c3ab/ffffff?text=Skincare'">
+              <img src="<?php echo htmlspecialchars($p['image_url']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" onerror="this.src='https://via.placeholder.com/300x300/a8c3ab/ffffff?text=Skincare'">
             </div>
             <div class="card__body">
               <span class="card__brand"><?php echo htmlspecialchars($p['brand']); ?></span>
@@ -77,12 +84,14 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div class="card__foot">
               <a href="product_details.php?id=<?php echo $p['id']; ?>" class="btn btn-outline btn-sm">View Details</a>
-              <form method="post" action="../actions/cart.php">
-                <input type="hidden" name="action" value="add">
-                <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
-                <input type="hidden" name="redirect" value="index.php">
-                <button type="submit" class="btn btn-sm">Add to Cart</button>
-              </form>
+              <?php if ($p['stock'] > 0): ?>
+                <form method="post" action="../actions/cart.php">
+                  <input type="hidden" name="action" value="add">
+                  <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
+                  <input type="hidden" name="redirect" value="index.php">
+                  <button type="submit" class="btn btn-sm">Add to Cart</button>
+                </form>
+              <?php endif; ?>
             </div>
           </div>
         <?php endforeach; ?>

@@ -2,7 +2,7 @@
 // Database configuration + connection
 
 $DB_HOST = 'localhost';
-$DB_NAME = 'korean_point';
+$DB_NAME = 'skincare_store';
 $DB_USER = 'root';
 $DB_PASS = '';
 

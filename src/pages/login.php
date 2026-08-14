@@ -8,22 +8,23 @@ if (isLoggedIn()) {
 }
 
 $error = '';
-$email = '';
+$username = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $stmt = $pdo->prepare('SELECT id, name, email, password FROM users WHERE email = ?');
-    $stmt->execute([strtolower($email)]);
+    $stmt = $pdo->prepare('SELECT id, username, email, password, full_name, role FROM users WHERE username = ? OR email = ?');
+    $stmt->execute([$username, $username]);
     $user = $stmt->fetch();
 
     if (!$user || !password_verify($password, $user['password'])) {
-        $error = 'Invalid email or password.';
+        $error = 'Invalid username/email or password.';
     } else {
         $_SESSION['user_id'] = (int) $user['id'];
-        $_SESSION['user_name'] = $user['name'];
-        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['full_name'] = $user['full_name'];
+        $_SESSION['role'] = $user['role'];
         header('Location: index.php');
         exit;
     }
@@ -43,8 +44,8 @@ include __DIR__ . '/../includes/header.php';
 
   <form method="post" action="login.php">
     <div class="field">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" required value="<?php echo htmlspecialchars($email); ?>">
+      <label for="username">Username or Email</label>
+      <input id="username" name="username" type="text" required value="<?php echo htmlspecialchars($username); ?>">
     </div>
     <div class="field">
       <label for="password">Password</label>

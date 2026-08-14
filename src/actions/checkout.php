@@ -1,6 +1,6 @@
 <?php
 // Checkout — a plain HTML form POSTs here (no fetch/JSON). Prices are
-// always read fresh from MySQL using the session cart; the browser is
+// always read fresh from MySQL using the cart table; the browser is
 // never trusted with what anything costs. On success this redirects to
 // order-success.php; on failure it redirects back with an error message
 // in the query string.
@@ -20,56 +20,44 @@ if (!isLoggedIn()) {
     exit;
 }
 
-$cart = getCart();
-if (empty($cart)) {
-    failCheckout($redirectBase, 'Your cart is empty.');
-}
+$userId = $_SESSION['user_id'];
+$shippingAddress = trim($_POST['shipping_address'] ?? '');
+$paymentMethod = trim($_POST['payment_method'] ?? '');
 
-$name = trim($_POST['name'] ?? '');
-$email = trim($_POST['email'] ?? '');
-$phone = trim($_POST['phone'] ?? '');
-$address = trim($_POST['address'] ?? '');
-$city = trim($_POST['city'] ?? '');
-
-if (!$name || !$email || !$phone || !$address || !$city) {
+if (!$shippingAddress || !$paymentMethod) {
     failCheckout($redirectBase, 'Please fill in every field.');
 }
 
 // Prices always come from the database, never from the browser.
-$ids = array_keys($cart);
-$placeholders = implode(',', array_fill(0, count($ids), '?'));
-$stmt = $pdo->prepare("SELECT id, price FROM products WHERE id IN ($placeholders)");
-$stmt->execute($ids);
-$products = $stmt->fetchAll();
-
-if (!$products) {
-    failCheckout($redirectBase, 'Your cart items are no longer available.');
+$items = getCartItems($pdo, $userId);
+if (!$items) {
+    failCheckout($redirectBase, 'Your cart is empty.');
 }
 
 $total = 0.0;
-foreach ($products as $p) {
-    $total += (float) $p['price'] * (int) $cart[$p['id']];
+foreach ($items as $item) {
+    $total += (float) $item['price'] * (int) $item['quantity'];
 }
 
 try {
     $pdo->beginTransaction();
 
-    $orderId = 'KP-' . time() . '-' . random_int(100, 999);
-    $stmt = $pdo->prepare('INSERT INTO orders (id, user_id, total, name, email, phone, address, city, zip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$orderId, $_SESSION['user_id'], $total, $name, $email, $phone, $address, $city, '']);
+    $stmt = $pdo->prepare('INSERT INTO orders (user_id, total_amount, shipping_address, payment_method) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$userId, $total, $shippingAddress, $paymentMethod]);
+    $orderId = $pdo->lastInsertId();
 
     $itemStmt = $pdo->prepare('INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)');
-    foreach ($products as $p) {
-        $itemStmt->execute([$orderId, $p['id'], (int) $cart[$p['id']], $p['price']]);
+    foreach ($items as $item) {
+        $itemStmt->execute([$orderId, $item['id'], $item['quantity'], $item['price']]);
     }
+
+    $pdo->prepare('DELETE FROM cart WHERE user_id = ?')->execute([$userId]);
 
     $pdo->commit();
 } catch (Exception $e) {
     $pdo->rollBack();
     failCheckout($redirectBase, 'Could not place order. Please try again.');
 }
-
-$_SESSION['cart'] = [];
 
 header('Location: ../pages/order-success.php?id=' . urlencode($orderId));
 exit;

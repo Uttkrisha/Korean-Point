@@ -24,8 +24,12 @@ $pageTitle = $pageTitle ?? 'Korean Point';
       <a href="index.php">Home</a>
       <a href="shop.php">Shop</a>
       <a href="about.php">About</a>
-      <a href="cart.php">Cart<?php if (isLoggedIn() && getCartCount() > 0): ?> (<?php echo getCartCount(); ?>)<?php endif; ?></a>
       <?php if (isLoggedIn()): ?>
+        <?php $navCartCount = getCartCount($pdo, $_SESSION['user_id']); ?>
+        <a href="cart.php">Cart<?php if ($navCartCount > 0): ?> (<?php echo $navCartCount; ?>)<?php endif; ?></a>
+        <?php if (isAdmin()): ?>
+          <a href="../admin.php">Admin</a>
+        <?php endif; ?>
         <a href="../actions/logout.php">Logout</a>
       <?php else: ?>
         <a href="login.php">Login</a>

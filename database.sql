@@ -1,38 +1,3 @@
-File Structure:
-text
-skincare_store/
-│
-├── config/
-│   └── database.php
-├── includes/
-│   ├── header.php
-│   └── footer.php
-├── css/
-│   └── style.css
-├── js/
-│   └── script.js
-├── images/
-│   └── (product images folder)
-├── admin/
-│   ├── index.php
-│   ├── add_product.php
-│   ├── edit_product.php
-│   ├── delete_product.php
-│   └── orders.php
-├── index.php
-├── products.php
-├── product_details.php
-├── cart.php
-├── add_to_cart.php
-├── remove_from_cart.php
-├── update_cart.php
-├── checkout.php
-├── login.php
-├── register.php
-├── logout.php
-└── database.sql
-1. database.sql
-sql
 -- Create database
 CREATE DATABASE IF NOT EXISTS skincare_store;
 USE skincare_store;
@@ -98,17 +63,17 @@ CREATE TABLE order_items (
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
--- Insert sample admin user
-INSERT INTO users (username, email, password, full_name, role) 
-VALUES ('admin', 'admin@skincare.com', '$2y$10$YourHashedPasswordHere', 'Admin User', 'admin');
-
--- Insert sample skincare products
+-- Insert sample skincare products. image_url is a full link (not a filename) —
+-- the site prints it straight into <img src="...">, no local images/ folder needed.
 INSERT INTO products (name, description, price, category, brand, skin_type, image_url, stock) VALUES
-('Vitamin C Serum', 'Brightening serum with 20% vitamin C', 45.99, 'Serum', 'GlowLab', 'All', 'vitamin_c.jpg', 15),
-('Hydrating Moisturizer', 'Deep hydration with hyaluronic acid', 32.50, 'Moisturizer', 'DermaCare', 'Dry', 'moisturizer.jpg', 20),
-('Gentle Cleanser', 'Sulfate-free foaming cleanser', 18.99, 'Cleanser', 'PureSkin', 'Sensitive', 'cleanser.jpg', 25),
-('Retinol Cream', 'Anti-aging cream with retinol', 52.00, 'Treatment', 'AgeDefy', 'Aging', 'retinol.jpg', 10),
-('Sunscreen SPF 50', 'Broad spectrum protection', 28.75, 'Sun Protection', 'SunShield', 'All', 'sunscreen.jpg', 30),
-('Exfoliating Scrub', 'Gentle exfoliation with jojoba beads', 22.99, 'Exfoliator', 'GlowLab', 'Oily', 'scrub.jpg', 18);
+('Vitamin C Serum', 'Brightening serum with 20% vitamin C', 45.99, 'Serum', 'GlowLab', 'All', 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=70', 15),
+('Hydrating Moisturizer', 'Deep hydration with hyaluronic acid', 32.50, 'Moisturizer', 'DermaCare', 'Dry', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=500&q=70', 20),
+('Gentle Cleanser', 'Sulfate-free foaming cleanser', 18.99, 'Cleanser', 'PureSkin', 'Sensitive', 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=500&q=70', 25),
+('Retinol Cream', 'Anti-aging cream with retinol', 52.00, 'Treatment', 'AgeDefy', 'Aging', 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=500&q=70', 10),
+('Sunscreen SPF 50', 'Broad spectrum protection', 28.75, 'Sun Protection', 'SunShield', 'All', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&q=70', 30),
+('Exfoliating Scrub', 'Gentle exfoliation with jojoba beads', 22.99, 'Exfoliator', 'GlowLab', 'Oily', 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=500&q=70', 18);
 
-this is the new table now, with database name of skincare_store
+-- Insert sample admin user — username "admin", password "admin123"
+-- (log in with username or email; change this password after your first login)
+INSERT INTO users (username, email, password, full_name, role)
+VALUES ('admin', 'admin@skincare.com', '$2y$12$sN9zZXllOpRoX88kC.dvA..n9OUabzoMbzG.KgnhrWZCBpDf0EbZW', 'Admin User', 'admin');
