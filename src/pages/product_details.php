@@ -48,7 +48,7 @@ include __DIR__ . '/../includes/header.php';
         <form method="post" action="../actions/cart.php">
           <input type="hidden" name="action" value="add">
           <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
-          <input type="hidden" name="redirect" value="product_details.php?id=<?php echo $product['id']; ?>">
+          <input type="hidden" name="redirect" value="../pages/product_details.php?id=<?php echo $product['id']; ?>">
           <div class="field" style="max-width:120px;">
             <label for="qty">Quantity</label>
             <input type="number" id="qty" name="qty" value="1" min="1" max="<?php echo (int) $product['stock']; ?>">

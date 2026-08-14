@@ -88,7 +88,7 @@ include __DIR__ . '/../includes/header.php';
                 <form method="post" action="../actions/cart.php">
                   <input type="hidden" name="action" value="add">
                   <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
-                  <input type="hidden" name="redirect" value="index.php">
+                  <input type="hidden" name="redirect" value="../pages/index.php">
                   <button type="submit" class="btn btn-sm">Add to Cart</button>
                 </form>
               <?php endif; ?>

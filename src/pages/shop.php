@@ -82,7 +82,7 @@ include __DIR__ . '/../includes/header.php';
                 <form method="post" action="../actions/cart.php">
                   <input type="hidden" name="action" value="add">
                   <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
-                  <input type="hidden" name="redirect" value="shop.php<?php echo $_SERVER['QUERY_STRING'] ? '?' . htmlspecialchars($_SERVER['QUERY_STRING']) : ''; ?>">
+                  <input type="hidden" name="redirect" value="../pages/shop.php<?php echo $_SERVER['QUERY_STRING'] ? '?' . htmlspecialchars($_SERVER['QUERY_STRING']) : ''; ?>">
                   <button type="submit" class="btn btn-sm">Add to Cart</button>
                 </form>
               <?php endif; ?>

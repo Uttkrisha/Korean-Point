@@ -42,7 +42,7 @@ include __DIR__ . '/../includes/header.php';
               <form method="post" action="../actions/cart.php" class="qty-form">
                 <input type="hidden" name="action" value="setQty">
                 <input type="hidden" name="id" value="<?php echo $item['id']; ?>">
-                <input type="hidden" name="redirect" value="cart.php">
+                <input type="hidden" name="redirect" value="../pages/cart.php">
                 <input type="number" name="qty" value="<?php echo $item['quantity']; ?>" min="1">
                 <button type="submit" class="btn btn-sm">Update</button>
               </form>
@@ -52,7 +52,7 @@ include __DIR__ . '/../includes/header.php';
               <form method="post" action="../actions/cart.php">
                 <input type="hidden" name="action" value="remove">
                 <input type="hidden" name="id" value="<?php echo $item['id']; ?>">
-                <input type="hidden" name="redirect" value="cart.php">
+                <input type="hidden" name="redirect" value="../pages/cart.php">
                 <button type="submit" class="btn btn-outline btn-sm">Remove</button>
               </form>
             </td>
@@ -65,7 +65,7 @@ include __DIR__ . '/../includes/header.php';
 
     <h3>Checkout</h3>
     <form method="post" action="../actions/checkout.php">
-      <input type="hidden" name="redirect" value="cart.php">
+      <input type="hidden" name="redirect" value="../pages/cart.php">
       <div class="field">
         <label for="shipping_address">Shipping address</label>
         <textarea id="shipping_address" name="shipping_address" rows="3" required></textarea>
