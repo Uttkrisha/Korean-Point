@@ -31,16 +31,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Passwords do not match.';
     } else {
         $emailLower = strtolower($email);
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ? OR email = ?');
-        $stmt->execute([$username, $emailLower]);
-        if ($stmt->fetch()) {
+        $existing = dbQuery($conn, 'SELECT id FROM users WHERE username = ? OR email = ?', 'ss', [$username, $emailLower])->fetch_assoc();
+        if ($existing) {
             $error = 'An account with this username or email already exists.';
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare('INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)');
-            $stmt->execute([$username, $emailLower, $hash, $fullName]);
+            dbExec(
+                $conn,
+                'INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)',
+                'ssss',
+                [$username, $emailLower, $hash, $fullName]
+            );
 
-            $_SESSION['user_id'] = (int) $pdo->lastInsertId();
+            $_SESSION['user_id'] = (int) $conn->insert_id;
             $_SESSION['username'] = $username;
             $_SESSION['full_name'] = $fullName;
             $_SESSION['role'] = 'user';

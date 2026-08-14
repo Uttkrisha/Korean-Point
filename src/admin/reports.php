@@ -3,22 +3,25 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 requireAdmin();
 
-$totalRevenue = (float) $pdo->query('SELECT COALESCE(SUM(total_amount), 0) FROM orders')->fetchColumn();
+$totalRevenue = (float) dbQuery($conn, 'SELECT COALESCE(SUM(total_amount), 0) FROM orders')->fetch_row()[0];
 
-$statusCounts = $pdo->query(
-    'SELECT status, COUNT(*) AS total FROM orders GROUP BY status'
-)->fetchAll(PDO::FETCH_KEY_PAIR);
+$statusCounts = array_column(
+    dbQuery($conn, 'SELECT status, COUNT(*) AS total FROM orders GROUP BY status')->fetch_all(MYSQLI_ASSOC),
+    'total',
+    'status'
+);
 
-$topProducts = $pdo->query(
+$topProducts = dbQuery(
+    $conn,
     'SELECT p.name, SUM(oi.quantity) AS units_sold, SUM(oi.quantity * oi.price) AS revenue
      FROM order_items oi
      JOIN products p ON oi.product_id = p.id
      GROUP BY oi.product_id
      ORDER BY units_sold DESC
      LIMIT 5'
-)->fetchAll();
+)->fetch_all(MYSQLI_ASSOC);
 
-$lowStock = $pdo->query('SELECT name, category, stock FROM products WHERE stock < 5 ORDER BY stock ASC')->fetchAll();
+$lowStock = dbQuery($conn, 'SELECT name, category, stock FROM products WHERE stock < 5 ORDER BY stock ASC')->fetch_all(MYSQLI_ASSOC);
 
 $statuses = ['pending', 'processing', 'shipped', 'delivered'];
 

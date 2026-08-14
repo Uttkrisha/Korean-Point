@@ -3,18 +3,19 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 requireAdmin();
 
-$totalProducts = (int) $pdo->query('SELECT COUNT(*) FROM products')->fetchColumn();
-$totalOrders = (int) $pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn();
-$totalUsers = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
-$totalRevenue = (float) $pdo->query('SELECT COALESCE(SUM(total_amount), 0) FROM orders')->fetchColumn();
+$totalProducts = (int) dbQuery($conn, 'SELECT COUNT(*) FROM products')->fetch_row()[0];
+$totalOrders = (int) dbQuery($conn, 'SELECT COUNT(*) FROM orders')->fetch_row()[0];
+$totalUsers = (int) dbQuery($conn, 'SELECT COUNT(*) FROM users')->fetch_row()[0];
+$totalRevenue = (float) dbQuery($conn, 'SELECT COALESCE(SUM(total_amount), 0) FROM orders')->fetch_row()[0];
 
-$recentOrders = $pdo->query(
+$recentOrders = dbQuery(
+    $conn,
     'SELECT o.*, u.username FROM orders o
      JOIN users u ON o.user_id = u.id
      ORDER BY o.order_date DESC LIMIT 5'
-)->fetchAll();
+)->fetch_all(MYSQLI_ASSOC);
 
-$lowStock = $pdo->query('SELECT * FROM products WHERE stock < 5 ORDER BY stock ASC')->fetchAll();
+$lowStock = dbQuery($conn, 'SELECT * FROM products WHERE stock < 5 ORDER BY stock ASC')->fetch_all(MYSQLI_ASSOC);
 
 $pageTitle = 'Admin Dashboard — Korean Point';
 include __DIR__ . '/../includes/header.php';

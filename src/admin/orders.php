@@ -8,23 +8,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
     $status = $_POST['status'] ?? '';
     $allowed = ['pending', 'processing', 'shipped', 'delivered'];
     if ($orderId > 0 && in_array($status, $allowed, true)) {
-        $pdo->prepare('UPDATE orders SET status = ? WHERE id = ?')->execute([$status, $orderId]);
+        dbExec($conn, 'UPDATE orders SET status = ? WHERE id = ?', 'si', [$status, $orderId]);
     }
     header('Location: orders.php');
     exit;
 }
 
-$orders = $pdo->query(
+$orders = dbQuery(
+    $conn,
     'SELECT o.*, u.username, u.email FROM orders o
      JOIN users u ON o.user_id = u.id
      ORDER BY o.order_date DESC'
-)->fetchAll();
+)->fetch_all(MYSQLI_ASSOC);
 
-$itemsStmt = $pdo->prepare(
+$itemsStmt = $conn->prepare(
     'SELECT oi.quantity, oi.price, p.name FROM order_items oi
      JOIN products p ON oi.product_id = p.id
      WHERE oi.order_id = ?'
 );
+$itemsStmt->bind_param('i', $itemsOrderId);
 
 $pageTitle = 'Manage Orders — Korean Point';
 include __DIR__ . '/../includes/header.php';
@@ -40,7 +42,7 @@ include __DIR__ . '/../includes/header.php';
       <tr><th>Order #</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Items</th></tr>
     </thead>
     <tbody>
-      <?php foreach ($orders as $o): $itemsStmt->execute([$o['id']]); $items = $itemsStmt->fetchAll(); ?>
+      <?php foreach ($orders as $o): $itemsOrderId = $o['id']; $itemsStmt->execute(); $items = $itemsStmt->get_result()->fetch_all(MYSQLI_ASSOC); ?>
         <tr>
           <td>#<?php echo $o['id']; ?></td>
           <td><?php echo htmlspecialchars($o['username']); ?><br><small><?php echo htmlspecialchars($o['email']); ?></small></td>

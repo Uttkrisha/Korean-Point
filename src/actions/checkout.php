@@ -29,7 +29,7 @@ if (!$shippingAddress || !$paymentMethod) {
 }
 
 // Prices always come from the database, never from the browser.
-$items = getCartItems($pdo, $userId);
+$items = getCartItems($conn, $userId);
 if (!$items) {
     failCheckout($redirectBase, 'Your cart is empty.');
 }
@@ -40,23 +40,46 @@ foreach ($items as $item) {
 }
 
 try {
-    $pdo->beginTransaction();
+    $conn->begin_transaction();
 
-    $stmt = $pdo->prepare('INSERT INTO orders (user_id, total_amount, shipping_address, payment_method) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$userId, $total, $shippingAddress, $paymentMethod]);
-    $orderId = $pdo->lastInsertId();
+    dbExec(
+        $conn,
+        'INSERT INTO orders (user_id, total_amount, shipping_address, payment_method) VALUES (?, ?, ?, ?)',
+        'idss',
+        [$userId, $total, $shippingAddress, $paymentMethod]
+    );
+    $orderId = $conn->insert_id;
 
-    $itemStmt = $pdo->prepare('INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)');
     foreach ($items as $item) {
-        $itemStmt->execute([$orderId, $item['id'], $item['quantity'], $item['price']]);
+        dbExec(
+            $conn,
+            'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
+            'iiid',
+            [$orderId, $item['id'], $item['quantity'], $item['price']]
+        );
+
+        // Only decrements if enough stock is still available — guards
+        // against two people buying the last unit at the same time.
+        $stockStmt = dbExec(
+            $conn,
+            'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
+            'iii',
+            [$item['quantity'], $item['id'], $item['quantity']]
+        );
+        if ($stockStmt->affected_rows === 0) {
+            throw new Exception('Not enough stock for ' . $item['name'] . '.');
+        }
     }
 
-    $pdo->prepare('DELETE FROM cart WHERE user_id = ?')->execute([$userId]);
+    dbExec($conn, 'DELETE FROM cart WHERE user_id = ?', 'i', [$userId]);
 
-    $pdo->commit();
-} catch (Exception $e) {
-    $pdo->rollBack();
+    $conn->commit();
+} catch (mysqli_sql_exception $e) {
+    $conn->rollback();
     failCheckout($redirectBase, 'Could not place order. Please try again.');
+} catch (Exception $e) {
+    $conn->rollback();
+    failCheckout($redirectBase, $e->getMessage());
 }
 
 header('Location: ../pages/order-success.php?id=' . urlencode($orderId));

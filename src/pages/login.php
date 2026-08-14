@@ -14,9 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $stmt = $pdo->prepare('SELECT id, username, email, password, full_name, role FROM users WHERE username = ? OR email = ?');
-    $stmt->execute([$username, $username]);
-    $user = $stmt->fetch();
+    $sql = 'SELECT id, username, email, password, full_name, role FROM users WHERE username = ? OR email = ?';
+    $user = dbQuery($conn, $sql, 'ss', [$username, $username])->fetch_assoc();
 
     if (!$user || !password_verify($password, $user['password'])) {
         $error = 'Invalid username/email or password.';

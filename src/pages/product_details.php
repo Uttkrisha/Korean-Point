@@ -8,7 +8,7 @@ if (!isLoggedIn()) {
 }
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$product = getProduct($pdo, $id);
+$product = getProduct($conn, $id);
 
 if (!$product) {
     header('Location: shop.php');

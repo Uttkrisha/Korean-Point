@@ -7,7 +7,7 @@ if (!isLoggedIn()) {
     exit;
 }
 
-$items = getCartItems($pdo, $_SESSION['user_id']);
+$items = getCartItems($conn, $_SESSION['user_id']);
 $total = 0;
 foreach ($items as $item) {
     $total += $item['price'] * $item['quantity'];
@@ -71,11 +71,9 @@ include __DIR__ . '/../includes/header.php';
         <textarea id="shipping_address" name="shipping_address" rows="3" required></textarea>
       </div>
       <div class="field">
-        <label for="payment_method">Payment method</label>
-        <select id="payment_method" name="payment_method" required>
-          <option value="Cash on Delivery">Cash on Delivery</option>
-          <option value="Card">Card</option>
-        </select>
+        <label>Payment method</label>
+        <p>Cash on Delivery</p>
+        <input type="hidden" name="payment_method" value="Cash on Delivery">
       </div>
       <button type="submit" class="btn btn-block">Place Order</button>
     </form>

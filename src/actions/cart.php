@@ -17,24 +17,18 @@ $productId = (int) ($_POST['id'] ?? 0);
 if ($action === 'add' && $productId > 0) {
     $qty = max(1, (int) ($_POST['qty'] ?? 1));
 
-    $stmt = $pdo->prepare('SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?');
-    $stmt->execute([$userId, $productId]);
-    $existing = $stmt->fetch();
+    $existing = dbQuery($conn, 'SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?', 'ii', [$userId, $productId])->fetch_assoc();
 
     if ($existing) {
-        $update = $pdo->prepare('UPDATE cart SET quantity = ? WHERE id = ?');
-        $update->execute([$existing['quantity'] + $qty, $existing['id']]);
+        dbExec($conn, 'UPDATE cart SET quantity = ? WHERE id = ?', 'ii', [$existing['quantity'] + $qty, $existing['id']]);
     } else {
-        $insert = $pdo->prepare('INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)');
-        $insert->execute([$userId, $productId, $qty]);
+        dbExec($conn, 'INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)', 'iii', [$userId, $productId, $qty]);
     }
 } elseif ($action === 'remove' && $productId > 0) {
-    $stmt = $pdo->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ?');
-    $stmt->execute([$userId, $productId]);
+    dbExec($conn, 'DELETE FROM cart WHERE user_id = ? AND product_id = ?', 'ii', [$userId, $productId]);
 } elseif ($action === 'setQty' && $productId > 0) {
     $qty = max(1, (int) ($_POST['qty'] ?? 1));
-    $stmt = $pdo->prepare('UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?');
-    $stmt->execute([$qty, $userId, $productId]);
+    dbExec($conn, 'UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?', 'iii', [$qty, $userId, $productId]);
 }
 
 header('Location: ' . safeRedirect('../pages/index.php'));

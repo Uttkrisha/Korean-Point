@@ -30,18 +30,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!ctype_digit($stock)) {
         $error = 'Stock must be a whole number.';
     } else {
-        $stmt = $pdo->prepare(
+        dbExec(
+            $conn,
             'INSERT INTO products (name, description, price, category, brand, skin_type, image_url, stock)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            'ssdssssi',
+            [$name, $description, (float) $price, $category, $brand, $skinType, $imageUrl, (int) $stock]
         );
-        $stmt->execute([$name, $description, $price, $category, $brand, $skinType, $imageUrl, $stock]);
         header('Location: products.php');
         exit;
     }
 }
 
-$categories = $pdo->query('SELECT DISTINCT category FROM products ORDER BY category')->fetchAll(PDO::FETCH_COLUMN);
-$skinTypes = $pdo->query('SELECT DISTINCT skin_type FROM products ORDER BY skin_type')->fetchAll(PDO::FETCH_COLUMN);
+$categories = array_column(dbQuery($conn, 'SELECT DISTINCT category FROM products ORDER BY category')->fetch_all(MYSQLI_ASSOC), 'category');
+$skinTypes = array_column(dbQuery($conn, 'SELECT DISTINCT skin_type FROM products ORDER BY skin_type')->fetch_all(MYSQLI_ASSOC), 'skin_type');
 
 $pageTitle = 'Add Product — Korean Point';
 include __DIR__ . '/../includes/header.php';

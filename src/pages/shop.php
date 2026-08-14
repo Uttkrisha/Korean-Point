@@ -12,29 +12,31 @@ $skinType = trim($_GET['skin_type'] ?? '');
 $search = trim($_GET['search'] ?? '');
 
 $sql = 'SELECT * FROM products WHERE 1=1';
+$types = '';
 $params = [];
 
 if ($category !== '') {
     $sql .= ' AND category = ?';
+    $types .= 's';
     $params[] = $category;
 }
 if ($skinType !== '') {
     $sql .= ' AND (skin_type = ? OR skin_type = "All")';
+    $types .= 's';
     $params[] = $skinType;
 }
 if ($search !== '') {
     $sql .= ' AND (name LIKE ? OR brand LIKE ?)';
+    $types .= 'ss';
     $params[] = '%' . $search . '%';
     $params[] = '%' . $search . '%';
 }
 $sql .= ' ORDER BY created_at DESC';
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$products = $stmt->fetchAll();
+$products = dbQuery($conn, $sql, $types, $params)->fetch_all(MYSQLI_ASSOC);
 
-$categories = $pdo->query('SELECT DISTINCT category FROM products ORDER BY category')->fetchAll(PDO::FETCH_COLUMN);
-$skinTypes = $pdo->query('SELECT DISTINCT skin_type FROM products WHERE skin_type != "All" ORDER BY skin_type')->fetchAll(PDO::FETCH_COLUMN);
+$categories = array_column(dbQuery($conn, 'SELECT DISTINCT category FROM products ORDER BY category')->fetch_all(MYSQLI_ASSOC), 'category');
+$skinTypes = array_column(dbQuery($conn, 'SELECT DISTINCT skin_type FROM products WHERE skin_type != "All" ORDER BY skin_type')->fetch_all(MYSQLI_ASSOC), 'skin_type');
 
 $pageTitle = 'Shop — Korean Point';
 include __DIR__ . '/../includes/header.php';

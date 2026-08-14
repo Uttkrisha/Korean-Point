@@ -8,10 +8,10 @@ if (!isLoggedIn()) {
 }
 
 // Featured products: latest 6
-$products = $pdo->query('SELECT * FROM products ORDER BY created_at DESC LIMIT 6')->fetchAll();
+$products = dbQuery($conn, 'SELECT * FROM products ORDER BY created_at DESC LIMIT 6')->fetch_all(MYSQLI_ASSOC);
 
 // Categories with product counts
-$categories = $pdo->query('SELECT category, COUNT(*) AS total FROM products GROUP BY category ORDER BY category')->fetchAll();
+$categories = dbQuery($conn, 'SELECT category, COUNT(*) AS total FROM products GROUP BY category ORDER BY category')->fetch_all(MYSQLI_ASSOC);
 
 $categoryIcons = [
     'Cleanser' => '🧼', 'Toner' => '💧', 'Serum' => '✨', 'Moisturizer' => '🫙',

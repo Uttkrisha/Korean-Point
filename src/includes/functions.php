@@ -1,5 +1,5 @@
 <?php
-// Small helpers shared by every page. Needs $pdo from config/database.php.
+// Small helpers shared by every page. Needs $conn from config/database.php.
 
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
@@ -25,29 +25,45 @@ function formatPrice($price) {
     return '$' . number_format((float) $price, 2);
 }
 
-function getProduct($pdo, $id) {
-    $stmt = $pdo->prepare('SELECT * FROM products WHERE id = ?');
-    $stmt->execute([(int) $id]);
-    return $stmt->fetch();
+// Run a SELECT with optional bound params, get back a mysqli_result.
+// $types is the bind_param type string, e.g. 'si' for (string, int).
+function dbQuery($conn, $sql, $types = '', $params = []) {
+    $stmt = $conn->prepare($sql);
+    if ($types !== '') {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Run an INSERT/UPDATE/DELETE with optional bound params, get back the
+// mysqli_stmt (so callers can read ->insert_id or ->affected_rows).
+function dbExec($conn, $sql, $types = '', $params = []) {
+    $stmt = $conn->prepare($sql);
+    if ($types !== '') {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    return $stmt;
+}
+
+function getProduct($conn, $id) {
+    return dbQuery($conn, 'SELECT * FROM products WHERE id = ?', 'i', [(int) $id])->fetch_assoc();
 }
 
 // Cart lives in the `cart` table (user_id, product_id, quantity) —
 // prices are always re-read from products at checkout time, never
 // trusted from the browser.
-function getCartItems($pdo, $userId) {
-    $stmt = $pdo->prepare(
-        'SELECT c.id AS cart_id, c.quantity, p.* FROM cart c
-         JOIN products p ON c.product_id = p.id
-         WHERE c.user_id = ?'
-    );
-    $stmt->execute([$userId]);
-    return $stmt->fetchAll();
+function getCartItems($conn, $userId) {
+    $sql = 'SELECT c.id AS cart_id, c.quantity, p.* FROM cart c
+            JOIN products p ON c.product_id = p.id
+            WHERE c.user_id = ?';
+    return dbQuery($conn, $sql, 'i', [$userId])->fetch_all(MYSQLI_ASSOC);
 }
 
-function getCartCount($pdo, $userId) {
-    $stmt = $pdo->prepare('SELECT SUM(quantity) FROM cart WHERE user_id = ?');
-    $stmt->execute([$userId]);
-    return (int) $stmt->fetchColumn();
+function getCartCount($conn, $userId) {
+    $row = dbQuery($conn, 'SELECT SUM(quantity) AS total FROM cart WHERE user_id = ?', 'i', [$userId])->fetch_assoc();
+    return (int) ($row['total'] ?? 0);
 }
 
 // Only allow redirecting back to a page inside this app.

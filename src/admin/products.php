@@ -5,15 +5,15 @@ requireAdmin();
 
 $search = trim($_GET['search'] ?? '');
 $sql = 'SELECT * FROM products WHERE 1=1';
+$types = '';
 $params = [];
 if ($search !== '') {
     $sql .= ' AND name LIKE ?';
+    $types .= 's';
     $params[] = '%' . $search . '%';
 }
 $sql .= ' ORDER BY id DESC';
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$products = $stmt->fetchAll();
+$products = dbQuery($conn, $sql, $types, $params)->fetch_all(MYSQLI_ASSOC);
 
 $deleteError = $_GET['delete_error'] ?? '';
 $pageTitle = 'Manage Products — Korean Point';

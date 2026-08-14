@@ -8,7 +8,10 @@ no build step.
 
 ## Tech Stack
 
-- **PHP 8** with **PDO + prepared statements** — see `config/database.php`
+- **PHP 8** with **mysqli + prepared statements** — see `config/database.php`.
+  Two tiny helpers in `functions.php`, `dbQuery()` (for SELECT) and
+  `dbExec()` (for INSERT/UPDATE/DELETE), wrap the usual
+  prepare → bind_param → execute steps so every query stays one line.
 - **MySQL** (`skincare_store` database: `users`, `products`, `cart`, `orders`, `order_items` — see `database.sql`)
 - **HTML** rendered directly by each page in `src/pages/*.php`
 - **CSS** — one flat stylesheet, `src/css/style.css`
@@ -30,11 +33,12 @@ username or email).
 database.sql                  schema + sample data
 
 config/
-  database.php               PDO connection + starts the session
+  database.php               mysqli connection + starts the session
 
 src/
   includes/
-    functions.php            isLoggedIn(), isAdmin(), formatPrice(), getProduct(), cart helpers
+    functions.php            isLoggedIn(), isAdmin(), formatPrice(), getProduct(),
+                               cart helpers, dbQuery()/dbExec() mysqli wrappers
     header.php                shared <head> + nav, included by every page
     footer.php                shared footer + closing tags
 
@@ -89,7 +93,8 @@ src/
 - **Redirect targets**: the hidden `redirect` field on cart/checkout forms
   is validated against a strict pattern before being used in a `Location`
   header, so it can't be turned into an open redirect.
-- All SQL goes through PDO prepared statements — no string-built queries.
+- All SQL goes through mysqli prepared statements (`bind_param` placeholders)
+  — no string-built queries.
 
 ## Features
 
