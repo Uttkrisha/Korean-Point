@@ -1,3 +1,0 @@
-
-img[data-src] { opacity: 0; }
-img.is-loaded { opacity: 1; transition: opacity .3s; }

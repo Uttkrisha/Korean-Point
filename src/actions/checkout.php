@@ -1,35 +1,26 @@
 <?php
-/* Checkout — a plain HTML form POSTs here (no fetch/JSON). Prices are
-   always read fresh from MySQL using the session cart; the browser is
-   never trusted with what anything costs. On success this redirects to
-   order-success.php; on failure it redirects back to the page the
-   checkout form was on, with an error message in the query string. */
-session_start();
+// Checkout — a plain HTML form POSTs here (no fetch/JSON). Prices are
+// always read fresh from MySQL using the session cart; the browser is
+// never trusted with what anything costs. On success this redirects to
+// order-success.php; on failure it redirects back with an error message
+// in the query string.
 require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
 
-function safeRedirectBase(string $default): string {
-    // Only ever redirect back into this app — never to an attacker-supplied URL.
-    $redirect = $_POST['redirect'] ?? $default;
-    if (!preg_match('#^[a-zA-Z0-9_\-./]+\.php(\?[^\s]*)?$#', $redirect)) {
-        $redirect = $default;
-    }
-    return $redirect;
-}
+$redirectBase = safeRedirect('../pages/cart.php');
 
-$redirectBase = safeRedirectBase('../pages/shop.php');
-
-function failCheckout(string $redirectBase, string $message): void {
+function failCheckout($redirectBase, $message) {
     $separator = str_contains($redirectBase, '?') ? '&' : '?';
     header('Location: ' . $redirectBase . $separator . 'checkout_error=' . urlencode($message));
     exit;
 }
 
-if (!isset($_SESSION['user_id'])) {
+if (!isLoggedIn()) {
     header('Location: ../pages/login.php');
     exit;
 }
 
-$cart = $_SESSION['cart'] ?? [];
+$cart = getCart();
 if (empty($cart)) {
     failCheckout($redirectBase, 'Your cart is empty.');
 }

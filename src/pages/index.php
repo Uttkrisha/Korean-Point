@@ -1,307 +1,141 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (!isLoggedIn()) {
     header('Location: login.php');
     exit;
 }
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../includes/catalog_data.php';
-$checkoutError = $_GET['checkout_error'] ?? '';
-$selfRedirect = $_SERVER['REQUEST_URI'];
+
+// Featured products: latest 6
+$products = $pdo->query('SELECT * FROM products ORDER BY product_date DESC LIMIT 6')->fetchAll();
+
+// Categories with product counts
+$categoryIcons = json_decode(file_get_contents(__DIR__ . '/../data/categories.json'), true);
+$counts = $pdo->query('SELECT category, COUNT(*) AS total FROM products GROUP BY category')->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$why = [
+    ['icon' => '🌿', 'title' => 'Natural Ingredients', 'text' => 'Fermented botanicals, centella, ginseng — sourced from Korean farms.'],
+    ['icon' => '🩺', 'title' => 'Dermatologist Tested', 'text' => 'Every formula clinically tested for sensitive skin compatibility.'],
+    ['icon' => '🐰', 'title' => 'Cruelty Free', 'text' => 'Never tested on animals, certified by Leaping Bunny.'],
+];
+
+$routine = [
+    ['icon' => '🧼', 'title' => 'Cleanse', 'text' => 'Double cleanse with oil then foam to fully remove impurities.'],
+    ['icon' => '💦', 'title' => 'Tone', 'text' => 'Rebalance pH and prep skin to drink in what comes next.'],
+    ['icon' => '💉', 'title' => 'Treat', 'text' => 'Target concerns with serums and ampoules rich in actives.'],
+    ['icon' => '🧴', 'title' => 'Moisturize', 'text' => 'Seal it all in and reinforce the barrier with cream or balm.'],
+];
+
+$faqs = [
+    ['q' => 'How long until I see results?', 'a' => 'Most customers notice improved hydration within a week and visible texture/tone changes by 4–8 weeks of consistent use.'],
+    ['q' => 'Are your products cruelty-free?', 'a' => 'Yes — every Korean Point product is Leaping Bunny certified and never tested on animals at any stage.'],
+    ['q' => 'What is your return policy?', 'a' => 'Unopened products can be returned within 30 days.'],
+];
+
+$pageTitle = 'Korean Point · Korean Skincare';
+include __DIR__ . '/../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="Korean Point — premium Korean skincare. Clean formulas, glass-skin results." />
-<title>Korean Point · Korean Skincare — Reveal Your Natural Glow</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../css/variables.css" />
-<link rel="stylesheet" href="../css/base.css" />
-<link rel="stylesheet" href="../css/nav.css" />
-<link rel="stylesheet" href="../css/hero.css" />
-<link rel="stylesheet" href="../css/products.css" />
-<link rel="stylesheet" href="../css/content.css" />
-<link rel="stylesheet" href="../css/footer.css" />
-<link rel="stylesheet" href="../css/overlays.css" />
-<link rel="stylesheet" href="../css/effects.css" />
-<link rel="stylesheet" href="../css/responsive.css" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
-</head>
-<body>
-
-<header class="nav" id="nav">
-  <div class="container nav__inner">
-    <a class="logo" href="index.php" aria-label="Korean Point home">
-      <span class="logo__leaf" aria-hidden="true">🌿</span>
-      <span class="logo__text">Korean Point</span>
-    </a>
-
-    <nav class="nav__links" id="navLinks" aria-label="Primary">
-      <a href="index.php" class="nav__link">Home</a>
-      <a href="shop.php" class="nav__link">Shop</a>
-      <a href="about.php" class="nav__link">About</a>
-    </nav>
-
-    <div class="nav__actions">
-      <button class="icon-btn" id="searchToggle" aria-label="Search products" aria-expanded="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      </button>
-      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
-        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 13.2A8.5 8.5 0 1 1 10.8 3a6.8 6.8 0 0 0 10.2 10.2z"/></svg>
-      </button>
-      <button class="icon-btn" id="cartToggle" aria-label="Open shopping cart">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2.5l2.36 12.19a2 2 0 0 0 2 1.63h8.4a2 2 0 0 0 1.97-1.63L21.5 8H6.1"/></svg>
-        <span class="badge" id="cartCount">0</span>
-      </button>
-      <button class="btn btn--ghost btn--sm" id="logoutBtn" type="button">Logout</button>
-      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </div>
-
-  <div class="searchbar" id="searchbar" hidden>
-    <div class="container searchbar__inner">
-      <svg class="searchbar__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input type="search" id="searchInput" class="searchbar__input" placeholder="Search serums, toners, brands…" aria-label="Search products" />
-      <button class="btn btn--ghost btn--sm" id="searchClear" type="button">Clear</button>
-    </div>
-  </div>
-</header>
-
-<div class="nav-overlay" id="navOverlay" hidden></div>
-
-<main>
-
-<section class="hero" id="home">
-  <div class="container hero__inner">
-    <div class="hero__copy">
-      <p class="eyebrow">K-Beauty · Clean formulas · Since 2014</p>
-      <h1 class="hero__title">Reveal Your <span>Natural Glow</span></h1>
-      <p class="hero__text">Dermatologist-tested Korean skincare built on fermented botanicals,
-        centella and niacinamide — gentle enough for sensitive skin, powerful enough to see in the mirror.</p>
-      <div class="hero__cta">
-        <a href="shop.php" class="btn btn--primary">Shop Now</a>
-        <a href="shop.php" class="btn btn--outline">Explore Collection</a>
-      </div>
-      <ul class="hero__stats">
-        <li><strong>120,000+</strong><span>Happy customers</span></li>
-        <li><strong>98%</strong><span>Would rebuy</span></li>
-        <li><strong>42</strong><span>Clean products</span></li>
-      </ul>
-    </div>
-
-    <div class="hero__image">
-      <img alt="Korean skincare ritual" data-src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=70" />
-    </div>
+<section class="hero">
+  <div class="container">
+    <h1>Reveal Your Natural Glow</h1>
+    <p>Dermatologist-tested Korean skincare built on fermented botanicals, centella and niacinamide.</p>
+    <a href="shop.php" class="btn">Shop Now</a>
   </div>
 </section>
 
-<section class="section" id="categories">
+<section class="section">
   <div class="container">
-    <header class="section__head">
-      <p class="eyebrow">Shop by need</p>
-      <h2 class="section__title">Featured Categories</h2>
-      <p class="section__sub">Six pillars of the Korean routine. Tap any card to shop it.</p>
-    </header>
-    <div class="cat-grid" id="catGrid"><!-- JS --></div>
+    <h2>Shop by Category</h2>
+    <div class="cat-grid">
+      <?php foreach ($categoryIcons as $cat): ?>
+        <a class="cat-card" href="shop.php?category=<?php echo urlencode($cat['name']); ?>">
+          <div class="cat-card__icon"><?php echo $cat['icon']; ?></div>
+          <div class="cat-card__name"><?php echo htmlspecialchars($cat['name']); ?></div>
+          <div class="cat-card__count"><?php echo (int) ($counts[$cat['name']] ?? 0); ?> products</div>
+        </a>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 
 <section class="section section--tint">
-  <div class="container ba">
-    <div>
-      <p class="eyebrow">Real results</p>
-      <h2 class="section__title">8 Weeks of Consistency</h2>
-      <p class="section__sub">Drag the handle. Same light, same camera, no retouching — texture and tone after
-        the 4-step routine with the Rice Glow Ampoule.</p>
-      <ul class="ba__list">
-        <li><strong>-38%</strong> visible redness</li>
-        <li><strong>+64%</strong> hydration at week 8</li>
-        <li><strong>92%</strong> saw smoother texture</li>
-      </ul>
-    </div>
-
-    <div class="ba__viewer">
-      <img class="ba__img" alt="Skin before routine" data-src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=70" />
-      <div class="ba__after" id="baAfter">
-        <img class="ba__img" alt="Skin after eight weeks" data-src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=70" />
-      </div>
-      <span class="ba__handle" id="baHandle" aria-hidden="true"></span>
-      <label class="sr-only" for="baRange">Before and after comparison</label>
-      <input type="range" min="0" max="100" value="50" id="baRange" class="ba__range" />
-      <span class="ba__tag ba__tag--l">Before</span>
-      <span class="ba__tag ba__tag--r">Week 8</span>
-    </div>
-  </div>
-</section>
-
-<section class="section reviews" id="reviews">
   <div class="container">
-    <header class="section__head">
-      <p class="eyebrow">4.9 average · 12,480 reviews</p>
-      <h2 class="section__title">Customer Reviews</h2>
-    </header>
-    <div class="review-stage">
-      <button class="icon-btn icon-btn--solid review__arrow" id="revPrev" aria-label="Previous review">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-      </button>
-      <div class="review-viewport"><div class="review-track" id="reviewTrack"><!-- JS --></div></div>
-      <button class="icon-btn icon-btn--solid review__arrow" id="revNext" aria-label="Next review">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-      </button>
+    <h2>Featured Products</h2>
+    <div class="product-grid">
+      <?php if (count($products) > 0): ?>
+        <?php foreach ($products as $p): ?>
+          <div class="card">
+            <div class="card__media">
+              <img src="<?php echo htmlspecialchars($p['image']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" onerror="this.src='https://via.placeholder.com/300x300/a8c3ab/ffffff?text=Skincare'">
+            </div>
+            <div class="card__body">
+              <span class="card__brand"><?php echo htmlspecialchars($p['brand']); ?></span>
+              <h3 class="card__name"><?php echo htmlspecialchars($p['name']); ?></h3>
+              <div class="card__price"><?php echo formatPrice($p['price']); ?></div>
+            </div>
+            <div class="card__foot">
+              <a href="product_details.php?id=<?php echo $p['id']; ?>" class="btn btn-outline btn-sm">View Details</a>
+              <form method="post" action="../actions/cart.php">
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
+                <input type="hidden" name="redirect" value="index.php">
+                <button type="submit" class="btn btn-sm">Add to Cart</button>
+              </form>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <p class="empty">No products available.</p>
+      <?php endif; ?>
     </div>
-    <div class="dots" id="reviewDots" role="tablist" aria-label="Reviews"></div>
   </div>
 </section>
 
-<section class="section section--tint" id="gallery">
+<section class="section">
   <div class="container">
-    <header class="section__head">
-      <p class="eyebrow">@koreanpoint.skin</p>
-      <h2 class="section__title">From the Community</h2>
-      <p class="section__sub">Tag us for a chance to be featured — and a 15% code.</p>
-    </header>
-    <div class="ig-grid" id="igGrid"><!-- JS --></div>
+    <h2>Why Korean Skincare</h2>
+    <div class="why-grid">
+      <?php foreach ($why as $w): ?>
+        <div class="why-card">
+          <div class="icon"><?php echo $w['icon']; ?></div>
+          <h3><?php echo htmlspecialchars($w['title']); ?></h3>
+          <p><?php echo htmlspecialchars($w['text']); ?></p>
+        </div>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 
-<section class="section" id="faq">
+<section class="section section--tint">
+  <div class="container">
+    <h2>Your Beauty Routine</h2>
+    <div class="timeline">
+      <?php foreach ($routine as $i => $r): ?>
+        <div>
+          <div class="icon"><?php echo $r['icon']; ?></div>
+          <p class="step">STEP <?php echo $i + 1; ?></p>
+          <h3><?php echo htmlspecialchars($r['title']); ?></h3>
+          <p><?php echo htmlspecialchars($r['text']); ?></p>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<section class="section">
   <div class="container container--narrow">
-    <header class="section__head">
-      <p class="eyebrow">Good to know</p>
-      <h2 class="section__title">Frequently Asked</h2>
-    </header>
-    <div class="faq" id="faqList"><!-- JS --></div>
+    <h2>Frequently Asked</h2>
+    <div class="faq">
+      <?php foreach ($faqs as $f): ?>
+        <details>
+          <summary><?php echo htmlspecialchars($f['q']); ?></summary>
+          <p><?php echo htmlspecialchars($f['a']); ?></p>
+        </details>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 
-</main>
-
-<footer class="footer">
-  <div class="container footer__grid">
-    <div class="footer__col">
-      <a class="logo" href="index.php"><span class="logo__leaf" aria-hidden="true">🌿</span><span class="logo__text">Korean Point</span></a>
-      <p class="footer__about">Clean Korean skincare formulated in Seoul, made for every skin barrier.
-        Cruelty free, dermatologist tested, recyclable glass.</p>
-      <div class="socials">
-        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1"/></svg></a>
-        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.5 9.5l5 2.5-5 2.5z"/></svg></a>
-        <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4v9.5a3.5 3.5 0 1 1-3-3.46"/><path d="M14 6.5c.8 1.6 2.2 2.5 4 2.6"/></svg></a>
-        <a href="#" aria-label="Pinterest"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 19l2-8M12.4 11a2.4 2.4 0 1 1 2.3-2.4c0 2.6-1.6 4.6-3.6 4.6"/></svg></a>
-      </div>
-    </div>
-
-    <nav class="footer__col" aria-label="Quick links">
-      <h3>Shop</h3>
-      <ul><li><a href="shop.php">All Products</a></li>
-        <li><a href="index.php#categories">Categories</a></li><li><a href="about.php">Routine</a></li></ul>
-    </nav>
-
-    <nav class="footer__col" aria-label="Customer support">
-      <h3>Support</h3>
-      <ul><li><a href="index.php#faq">FAQ</a></li><li><a href="index.php#faq">Shipping &amp; Returns</a></li>
-        <li><a href="index.php#faq">Ingredient Glossary</a></li></ul>
-    </nav>
-
-    <div class="footer__col">
-      <h3>Company</h3>
-      <ul><li><a href="about.php">Our Story</a></li><li><a href="about.php">Sustainability</a></li>
-        <li><a href="index.php#reviews">Reviews</a></li></ul>
-      <p class="footer__contact">Seongsu-dong, Seoul</p>
-    </div>
-  </div>
-
-  <div class="container footer__bar">
-    <p>© <span id="year">2026</span> Korean Point Cosmetics Co. All rights reserved.</p>
-    <ul class="pay" aria-label="Accepted payment methods">
-      <li>VISA</li><li>Mastercard</li><li>AMEX</li><li>PayPal</li><li>Apple&nbsp;Pay</li><li>KakaoPay</li>
-    </ul>
-  </div>
-</footer>
-
-<aside class="drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Shopping cart" hidden>
-  <header class="drawer__head">
-    <h2 id="drawerTitle">Your Cart</h2>
-    <button class="icon-btn" id="cartClose" aria-label="Close cart">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-  </header>
-  <div class="drawer__body" id="cartItems"><!-- JS --></div>
-  <footer class="drawer__foot">
-    <div class="drawer__row"><span>Subtotal</span><strong id="cartSubtotal">NPR 0.00</strong></div>
-    <div class="drawer__row drawer__row--muted"><span>Shipping</span><span id="cartShip">Free</span></div>
-    <div class="drawer__row drawer__row--total"><span>Total</span><strong id="cartTotal">NPR 0.00</strong></div>
-    <button class="btn btn--primary btn--block" id="checkoutBtn">Checkout</button>
-    <button class="btn btn--ghost btn--block btn--sm" id="cartToggleClose">Continue shopping</button>
-  </footer>
-</aside>
-
-<div class="scrim" id="scrim" hidden></div>
-
-<div class="modal" id="quickModal" role="dialog" aria-modal="true" aria-labelledby="qvName" hidden>
-  <div class="modal__panel modal__panel--wide">
-    <button class="icon-btn modal__close" id="qvClose" aria-label="Close quick view">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <div class="qv" id="qvBody"><!-- JS --></div>
-  </div>
-</div>
-
-<div class="modal" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="coTitle" hidden>
-  <div class="modal__panel">
-    <button class="icon-btn modal__close" id="coClose" aria-label="Close checkout">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <h2 id="coTitle" class="modal__title">Checkout</h2>
-    <p class="modal__sub">Demo only — no payment is processed.</p>
-    <form class="co-form" id="coForm" method="post" action="../actions/checkout.php">
-      <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($selfRedirect); ?>" />
-      <div class="field"><label for="coName">Full name</label><input id="coName" name="name" required autocomplete="name" /></div>
-      <div class="field"><label for="coEmail">Email</label><input id="coEmail" name="email" type="email" required autocomplete="email" /></div>
-      <div class="field field--full"><label for="coAddr">Address</label><input id="coAddr" name="address" required autocomplete="street-address" /></div>
-      <div class="field"><label for="coCity">City</label><input id="coCity" name="city" required autocomplete="address-level2" /></div>
-      <div class="field"><label for="coPhone">Phone number</label><input id="coPhone" name="phone" type="tel" required autocomplete="tel" /></div>
-      <p class="co-form__error" id="coError" role="alert" hidden></p>
-      <div class="co-form__foot">
-        <span>Total <strong id="coTotal">NPR 0.00</strong></span>
-        <button class="btn btn--primary" type="submit">Place order</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<button class="fab" id="backTop" aria-label="Back to top" hidden>
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M5 12l7-7 7 7"/></svg>
-</button>
-
-<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
-
-<script>
-  const PRODUCTS = <?php echo json_encode($products); ?>;
-  const CATEGORIES = <?php echo json_encode($categories); ?>;
-  const CART_ITEMS = <?php echo json_encode($cartItems); ?>;
-  const CART_SUBTOTAL = <?php echo json_encode($cartSubtotal); ?>;
-  const CART_COUNT = <?php echo json_encode($cartCount); ?>;
-  <?php if ($checkoutError): ?>
-  window.__checkoutError = <?php echo json_encode($checkoutError); ?>;
-  <?php endif; ?>
-</script>
-<script src="../js/data.js"></script>
-<script src="../js/state.js"></script>
-<script src="../js/utils.js"></script>
-<script src="../js/catalog.js"></script>
-<script src="../js/reviews.js"></script>
-<script src="../js/cart.js"></script>
-<script src="../js/modals.js"></script>
-<script src="../js/before-after.js"></script>
-<script src="../js/nav-ui.js"></script>
-<script src="../js/main.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

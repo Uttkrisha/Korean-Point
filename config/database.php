@@ -1,10 +1,10 @@
 <?php
-
+// Database configuration + connection
 
 $DB_HOST = 'localhost';
 $DB_NAME = 'korean_point';
 $DB_USER = 'root';
-$DB_PASS = ''; 
+$DB_PASS = '';
 
 try {
     $pdo = new PDO(
@@ -17,7 +17,9 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    http_response_code(500);
-    header('Content-Type: application/json');
-    die(json_encode(['error' => 'Database connection failed.']));
+    die('Connection failed: ' . $e->getMessage());
+}
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
