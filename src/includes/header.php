@@ -28,7 +28,7 @@ $pageTitle = $pageTitle ?? 'Korean Point';
         <?php $navCartCount = getCartCount($pdo, $_SESSION['user_id']); ?>
         <a href="cart.php">Cart<?php if ($navCartCount > 0): ?> (<?php echo $navCartCount; ?>)<?php endif; ?></a>
         <?php if (isAdmin()): ?>
-          <a href="../admin.php">Admin</a>
+          <a href="../admin/index.php">Admin</a>
         <?php endif; ?>
         <a href="../actions/logout.php">Logout</a>
       <?php else: ?>

@@ -9,6 +9,18 @@ function isAdmin() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 }
 
+// Call at the top of every admin/*.php page.
+function requireAdmin() {
+    if (!isLoggedIn()) {
+        header('Location: ../pages/login.php');
+        exit;
+    }
+    if (!isAdmin()) {
+        header('Location: ../pages/index.php');
+        exit;
+    }
+}
+
 function formatPrice($price) {
     return '$' . number_format((float) $price, 2);
 }

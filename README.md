@@ -43,6 +43,16 @@ src/
     checkout.php               reads the cart table, writes orders + order_items in a transaction
     logout.php                   destroys the session
 
+  admin/                      gated by requireAdmin() — role must be 'admin'
+    _nav.php                  shared Dashboard/Products/Orders/Reports sub-nav
+    index.php                 dashboard: totals, recent orders, low-stock list
+    products.php               product list, search, delete
+    add_product.php             add a product
+    edit_product.php            edit a product
+    delete_product.php           POST-only delete endpoint
+    orders.php                  all orders, inline status update, view items
+    reports.php                  revenue, orders by status, top sellers, low stock
+
   pages/
     login.php                 login form (username or email) + gate
     register.php               registration form
@@ -88,8 +98,16 @@ skin type and search filters · a real product detail page showing
 stock and skin type · a cart page with quantity controls and totals ·
 checkout that saves a real order to MySQL · a dedicated
 order-confirmation page with the real order ID · FAQ accordion
-(native `<details>`, no JS) · admin nav link shown when `role = admin`
-(the actual admin pages are a work in progress — `src/admin.php`).
+(native `<details>`, no JS).
+
+**Admin** (log in as `admin`/`admin123`, or any user with `role = 'admin'`
+in the `users` table — the "Admin" link then appears in the nav):
+- Dashboard with product/order/user/revenue totals, recent orders, low stock
+- Add, edit, delete products (category and skin type are plain text fields
+  with a `<datalist>` of existing values — there's no separate categories
+  table in the schema, so a category is just whatever string a product uses)
+- View all orders and update their status (pending → processing → shipped → delivered)
+- Reports: total revenue, order counts by status, top-selling products, low stock
 
 ## How to start
 

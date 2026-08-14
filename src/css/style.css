@@ -141,6 +141,27 @@ h1, h2, h3, p { margin: 0 0 0.5rem; }
 .faq summary { font-weight: 600; cursor: pointer; }
 .faq p { color: var(--ink-soft); margin-top: 0.6rem; }
 
+/* Admin */
+.admin-nav { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.admin-nav a { padding: 8px 16px; border: 1px solid var(--line); border-radius: var(--radius); font-weight: 600; font-size: 0.85rem; }
+.admin-nav a:hover, .admin-nav a.is-active { background: var(--ink); color: var(--white); }
+.section__head--row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+.section__head--row h2 { margin: 0; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.2rem; text-align: center; }
+.stat-card strong { display: block; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: var(--sage-deep); }
+.stat-card span { font-size: 0.8rem; color: var(--ink-soft); }
+
+.table { width: 100%; border-collapse: collapse; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; }
+.table th, .table td { padding: 0.7rem 0.9rem; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.88rem; vertical-align: top; }
+.table th { background: var(--beige); }
+
+.badge-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; text-transform: capitalize; }
+.status-pending { background: #fff3cd; color: #856404; }
+.status-processing { background: #d1ecf1; color: #0c5460; }
+.status-shipped, .status-delivered { background: #d4edda; color: #155724; }
+
 /* Footer */
 .footer { background: var(--ink); color: #ece5da; margin-top: 3rem; }
 .footer__inner { padding: 1.5rem 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; }
@@ -150,6 +171,7 @@ h1, h2, h3, p { margin: 0 0 0.5rem; }
   .cat-grid, .product-grid { grid-template-columns: repeat(3, 1fr); }
   .why-grid { grid-template-columns: 1fr 1fr; }
   .timeline { grid-template-columns: 1fr 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 640px) {
