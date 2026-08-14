@@ -33,27 +33,29 @@ $pageTitle = 'Log In — Korean Point';
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="auth-card">
-  <h1>Welcome back</h1>
-  <p class="sub">Log in to shop your Korean skincare routine.</p>
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Welcome back</h1>
+    <p class="sub">Log in to shop your Korean skincare routine.</p>
 
-  <?php if ($error): ?>
-    <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-  <?php endif; ?>
+    <?php if ($error): ?>
+      <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
 
-  <form method="post" action="login.php">
-    <div class="field">
-      <label for="username">Username or Email</label>
-      <input id="username" name="username" type="text" required value="<?php echo htmlspecialchars($username); ?>">
-    </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" required>
-    </div>
-    <button type="submit" class="btn btn-block">Log In</button>
-  </form>
+    <form method="post" action="login.php">
+      <div class="field">
+        <label for="username" class="sr-only">Username or Email</label>
+        <input id="username" name="username" type="text" placeholder="Username or Email" required value="<?php echo htmlspecialchars($username); ?>">
+      </div>
+      <div class="field">
+        <label for="password" class="sr-only">Password</label>
+        <input id="password" name="password" type="password" placeholder="Password" required>
+      </div>
+      <button type="submit" class="btn btn-block">Log In</button>
+    </form>
 
-  <p class="auth-switch">Don't have an account? <a href="register.php">Register</a></p>
+    <p class="auth-switch">Don't have an account? <a href="register.php">Register</a></p>
+  </div>
 </div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

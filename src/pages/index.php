@@ -45,10 +45,34 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="hero">
-  <div class="container">
-    <h1>Reveal Your Natural Glow</h1>
-    <p>Dermatologist-tested Korean skincare built on fermented botanicals, centella and niacinamide.</p>
-    <a href="shop.php" class="btn">Shop Now</a>
+  <div class="container hero__inner">
+    <div>
+      <h1>Reveal Your Natural Glow</h1>
+      <p>Dermatologist-tested Korean skincare built on fermented botanicals, centella and niacinamide.</p>
+      <a href="shop.php" class="btn">Shop Now</a>
+    </div>
+    <div class="hero__art">
+      <svg viewBox="0 0 400 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of a woman applying skincare cream, with skincare jars and leaves">
+        <ellipse cx="200" cy="220" rx="180" ry="190" fill="#eef3ea"/>
+        <path d="M40 60 C20 90 30 130 70 140 C60 100 60 80 40 60 Z" fill="var(--sage)"/>
+        <path d="M360 70 C385 95 380 135 340 150 C348 110 350 90 360 70 Z" fill="var(--sage-deep)"/>
+        <path d="M120 420 C120 340 150 300 200 300 C250 300 280 340 280 420 Z" fill="#ffffff" stroke="var(--line)" stroke-width="2"/>
+        <path d="M140 150 C140 100 165 70 200 70 C235 70 260 100 260 150 C260 165 245 175 230 168 C215 178 185 178 170 168 C155 175 140 165 140 150 Z" fill="var(--sage-deep)"/>
+        <circle cx="200" cy="95" r="10" fill="var(--sage-deep)"/>
+        <ellipse cx="200" cy="185" rx="58" ry="65" fill="#f3c9a1"/>
+        <circle cx="165" cy="200" r="8" fill="#f3a6a6" opacity="0.5"/>
+        <circle cx="235" cy="200" r="8" fill="#f3a6a6" opacity="0.5"/>
+        <path d="M175 185 q8 6 16 0" stroke="#5a4634" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M209 185 q8 6 16 0" stroke="#5a4634" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M188 215 q12 8 24 0" stroke="#5a4634" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <ellipse cx="245" cy="205" rx="16" ry="22" fill="#f3c9a1" transform="rotate(-20 245 205)"/>
+        <rect x="80" y="330" width="46" height="56" rx="10" fill="var(--pink)"/>
+        <rect x="80" y="322" width="46" height="14" rx="6" fill="var(--sage-deep)"/>
+        <rect x="270" y="345" width="40" height="45" rx="8" fill="var(--sage)"/>
+        <rect x="270" y="338" width="40" height="12" rx="5" fill="var(--sage-deep)"/>
+        <rect x="185" y="355" width="30" height="40" rx="14" fill="#ffffff" stroke="var(--line)" stroke-width="2"/>
+      </svg>
+    </div>
   </div>
 </section>
 
