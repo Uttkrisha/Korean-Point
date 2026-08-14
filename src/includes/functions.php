@@ -22,7 +22,7 @@ function requireAdmin() {
 }
 
 function formatPrice($price) {
-    return '$' . number_format((float) $price, 2);
+    return 'NPR ' . number_format((float) $price, 2);
 }
 
 // Run a SELECT with optional bound params, get back a mysqli_result.
