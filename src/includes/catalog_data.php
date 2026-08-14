@@ -1,10 +1,4 @@
 <?php
-/* Shared data loader for every gated page — queries MySQL for the product
-   catalog and builds the current session's cart directly in PHP. No fetch()
-   calls: the results are embedded straight into each page as inline JSON
-   for catalog.js/cart.js to render. Requires $pdo (config/database.php)
-   and session_start() to already have run. */
-
 $products = array_map(function (array $r): array {
     return [
         'id' => $r['id'],

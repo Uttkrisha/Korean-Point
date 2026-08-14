@@ -1,9 +1,4 @@
 'use strict';
-/* Shopping cart — CART_ITEMS/CART_SUBTOTAL/CART_COUNT are embedded into
-   the page by PHP (see includes/catalog_data.php) from the session cart.
-   Quantity/remove buttons are real forms posting to actions/cart.php —
-   no fetch(), the whole page just reloads after each change. */
-
 function renderCart() {
   const redirect = location.pathname + location.search;
   $('#cartCount').textContent = CART_COUNT;

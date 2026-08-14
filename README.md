@@ -52,7 +52,7 @@ src/
 
   js/
     data.js                   editorial content (why/routine/reviews/IG/FAQ copy)
-    state.js                    localStorage theme helper, shared app state, $/$$/fmt/byId
+    state.js                   localStorage theme helper, shared app state, $/$$/fmt/byId
     utils.js                      toast, lazy-load, star markup
     catalog.js                      categories, filter chips, product cards (renders from PRODUCTS/CATEGORIES)
     reviews.js                        reviews slider (prev/next + dots)
